@@ -4,6 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { getRouteTitle } from "@/config/titles";
 import NotificationDrawer from "./NotificationDrawer";
+import UpgradeOrgModal from "@/components/UpgradeOrgModal";
+import WorkspaceSwitcher from "./WorkspaceSwitcher";
 
 export default function Topbar() {
   const pathname = usePathname();
@@ -11,6 +13,14 @@ export default function Topbar() {
   const title = getRouteTitle(pathname);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [toast, setToast] = useState("");
+  const [isOrgMode, setIsOrgMode] = useState(false);
+  const [currentWorkspace, setCurrentWorkspace] = useState("personal");
+  const workspaces = [
+    { id: "personal", label: "个人空间", icon: "🧑‍💻" },
+    ...(isOrgMode ? [{ id: "银弹科技", label: "银弹科技", icon: "🏢", subtitle: "角色：管理员" }] : []),
+  ];
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -26,6 +36,7 @@ export default function Topbar() {
 
   return (
     <>
+      {toast && <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 999, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{toast}</div>}
       <header
         className="sticky top-0 z-30 flex items-center shrink-0"
         style={{
@@ -75,12 +86,26 @@ export default function Topbar() {
             }}
           >
             <SearchIcon />
-            <span className="hidden lg:inline">搜索...</span>
+            <span className="hidden lg:inline">搜索</span>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "var(--color-muted-soft)",
+                backgroundColor: "var(--color-surface-card)",
+                padding: "1px 5px",
+                borderRadius: "var(--radius-xs)",
+                lineHeight: "16px",
+                marginLeft: 2,
+              }}
+            >
+              ⌘K
+            </span>
           </button>
 
           {/* Docs button */}
           <button
-            onClick={() => window.open("https://docs.aliapi.dev", "_blank", "noopener,noreferrer")}
+            onClick={() => window.location.href = "/docs"}
             className="flex items-center rounded-md transition-colors"
             style={{
               height: 36,
@@ -104,6 +129,14 @@ export default function Topbar() {
             <DocsIcon />
             <span className="hidden lg:inline">文档</span>
           </button>
+
+          {/* Workspace Switcher */}
+          <WorkspaceSwitcher
+            workspaces={workspaces}
+            currentId={currentWorkspace}
+            onSwitch={(id) => { setCurrentWorkspace(id); setIsOrgMode(id !== "personal"); }}
+            onCreateOrg={() => { setToast("升级组织功能开发中"); setTimeout(() => setToast(""), 2500); }}
+          />
 
           {/* Notifications */}
           <button
@@ -172,8 +205,14 @@ export default function Topbar() {
               >
                 <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>个人资料</UserMenuItem>
                 <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>设置 & 偏好</UserMenuItem>
-                <UserMenuItem onClick={() => { router.push("/settings/security"); setUserMenuOpen(false); }}>安全与审计中心</UserMenuItem>
-                <UserMenuItem onClick={() => { router.push("/growth/team"); setUserMenuOpen(false); }}>团队 & 员工管理</UserMenuItem>
+                {isOrgMode ? (
+                  <>
+                    <UserMenuItem onClick={() => { router.push("/settings/security"); setUserMenuOpen(false); }}>安全与审计中心</UserMenuItem>
+                    <UserMenuItem onClick={() => { router.push("/growth/team"); setUserMenuOpen(false); }}>团队 & 员工管理</UserMenuItem>
+                  </>
+                ) : (
+                  <UserMenuItem onClick={() => { setUpgradeOpen(true); setUserMenuOpen(false); }}>升级为组织</UserMenuItem>
+                )}
                 <div style={{ height: 1, backgroundColor: "var(--color-hairline-soft)", margin: "4px 0" }} />
                 <UserMenuItem muted onClick={() => setUserMenuOpen(false)}>退出登录</UserMenuItem>
               </div>
@@ -184,6 +223,9 @@ export default function Topbar() {
 
       {/* Notification Drawer */}
       <NotificationDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      {/* Upgrade Org Modal */}
+      <UpgradeOrgModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onSuccess={() => { setIsOrgMode(true); setCurrentWorkspace("银弹科技"); setToast("升级成功，正在刷新"); setTimeout(() => setToast(""), 2500); }} />
     </>
   );
 }

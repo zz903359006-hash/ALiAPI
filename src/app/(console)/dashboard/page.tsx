@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { getRouteTitle } from "@/config/titles";
+import UpgradeOrgModal from "@/components/UpgradeOrgModal";
+
+type AccountMode = "personal" | "org-admin" | "employee";
 
 const TIME_RANGES = ["今天", "近 7 天", "本月", "近 30 天"] as const;
 type TimeRange = (typeof TIME_RANGES)[number];
@@ -16,14 +19,34 @@ const TREND_DATA = [
   { day: "06-26", calls: 5200, cost: 580 },
 ];
 
+const TEAM_TOP5 = [
+  { name: "AI 客服项目组", usage: "3,850,000 Tokens" },
+  { name: "内容生成平台", usage: "2,120,000 Tokens" },
+  { name: "数据分析团队", usage: "1,670,000 Tokens" },
+  { name: "智能搜索小组", usage: "890,000 Tokens" },
+  { name: "图像生成项目", usage: "430,000 Tokens" },
+];
+
 export default function DashboardPage() {
+  const [accountMode, setAccountMode] = useState<AccountMode>("personal");
   const [timeRange, setTimeRange] = useState<TimeRange>("近 7 天");
   const [hasKeys, setHasKeys] = useState(false);
   const [hasRecentRequests, setHasRecentRequests] = useState(false);
   const [stepsDone, setStepsDone] = useState<Set<number>>(new Set());
   const [showDevToggle, setShowDevToggle] = useState(false);
+  const [toast, setToast] = useState("");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2500); };
 
   const isNewUser = !hasKeys || !hasRecentRequests;
+  const showGuide = (accountMode === "personal" || accountMode === "org-admin") && isNewUser;
+
+  const guideSteps = [
+    { step: 0, icon: "💰", title: "充值账户", desc: "为账户充值，解锁全站所有模型调用能力", btn: "前往充值", href: "/billing/credits", skipComplete: true },
+    { step: 1, icon: "🔑", title: "创建调用 Key", desc: "生成 API Key，配置路由与风控策略", btn: "创建调用 Key", href: "/keys/create" },
+    { step: 2, icon: "💻", title: "开始调用", desc: "复制兼容 OpenAI 的示例代码，发起首次请求", btn: "查看快速开始文档", href: "https://docs.aliapi.dev" },
+  ];
 
   const completeStep = (i: number) => setStepsDone((p) => { const n = new Set(p); n.add(i); return n; });
 
@@ -45,10 +68,20 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Dev toggle — hidden by default, click title 5 times to reveal */}
+      {toast && <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 999, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{toast}</div>}
+
+      {/* Dev toggle — hidden by default, double-click title to reveal */}
       {showDevToggle && (
-        <div style={{ marginBottom: "var(--spacing-md)", padding: "var(--spacing-sm)", backgroundColor: "#FEF3C7", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-md)", fontSize: "var(--text-caption)" }}>
-          <span style={{ fontWeight: 600 }}>⚙️ 开发调试：引导区状态</span>
+        <div style={{ marginBottom: "var(--spacing-md)", padding: "var(--spacing-sm)", backgroundColor: "#FEF3C7", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-md)", fontSize: "var(--text-caption)", flexWrap: "wrap" }}>
+          <span style={{ fontWeight: 600 }}>⚙️ 开发调试</span>
+          <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}>
+            <span style={{ fontWeight: 500 }}>身份：</span>
+            <select value={accountMode} onChange={(e) => setAccountMode(e.target.value as AccountMode)} style={{ fontSize: "var(--text-caption)", padding: "2px 4px", borderRadius: "var(--radius-sm)", border: "1px solid var(--color-hairline)" }}>
+              <option value="personal">个人账户</option>
+              <option value="org-admin">组织管理员</option>
+              <option value="employee">员工</option>
+            </select>
+          </label>
           <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}><input type="checkbox" checked={!hasKeys} onChange={() => setHasKeys(!hasKeys)} />无 Key</label>
           <label style={{ display: "flex", alignItems: "center", gap: 4, cursor: "pointer" }}><input type="checkbox" checked={!hasRecentRequests} onChange={() => setHasRecentRequests(!hasRecentRequests)} />无调用记录</label>
           <button onClick={() => setShowDevToggle(false)} style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "var(--color-muted)", fontSize: "var(--text-caption)" }}>关闭</button>
@@ -65,7 +98,9 @@ export default function DashboardPage() {
             {getRouteTitle("/dashboard")}
           </h1>
           <p style={{ marginTop: "var(--spacing-xs)", fontSize: "var(--text-body-sm)", color: "var(--color-muted)" }}>
-            选择合适的模型 → 创建调用 Key → 快速接入。关注用量、费用与风险。
+            {accountMode === "employee"
+              ? "查看个人用量与可用额度，关注异常请求。"
+              : "充值 → 创建 Key → 开始调用。关注用量、费用与风险。"}
           </p>
         </div>
         <div style={{ display: "inline-flex", padding: "var(--spacing-xxs)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-md)", flexShrink: 0 }}>
@@ -80,18 +115,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Section 2 — Guide: expanded or compact */}
-      {isNewUser ? (
-        /* Expanded onboarding */
+      {/* Section 2 — New user guide (personal / org-admin only) */}
+      {showGuide ? (
         <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-xl)", marginBottom: "var(--spacing-xl)" }}>
           <h2 style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 var(--spacing-xs)", fontFamily: "var(--font-display)" }}>🚀 快速接入 ALiAPI</h2>
-          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: "0 0 var(--spacing-lg)" }}>三步完成首次模型调用，开始使用。</p>
+          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: "0 0 var(--spacing-lg)" }}>三步完成充值接入，开始调用。</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--spacing-lg)" }}>
-            {[
-              { step: 0, icon: "🔍", title: "选择模型", desc: "在模型广场挑选适合的模型", btn: "前往模型广场", href: "/models" },
-              { step: 1, icon: "🔑", title: "创建调用 Key", desc: "创建一个带路由与风控的 Key", btn: "创建调用 Key", href: "/keys/create" },
-              { step: 2, icon: "💻", title: "复制示例代码", desc: "使用 OpenAI 兼容接口发起第一次调用", btn: "查看快速开始文档", href: "https://docs.aliapi.dev" },
-            ].map((item) => {
+            {guideSteps.map((item) => {
               const done = stepsDone.has(item.step);
               return (
                 <div key={item.step} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "var(--spacing-lg)", backgroundColor: "var(--color-surface-soft)", borderRadius: "var(--radius-md)", opacity: done ? 0.6 : 1 }}>
@@ -101,7 +131,13 @@ export default function DashboardPage() {
                   <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 var(--spacing-xs)" }}>{item.title}</h3>
                   <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>{item.desc}</p>
                   <button
-                    onClick={() => { if (!done) { completeStep(item.step); if (item.step === 0) window.location.href = "/models"; else if (item.step === 1) window.location.href = "/keys/create"; else window.open(item.href, "_blank"); } }}
+                    onClick={() => {
+                      if (done) return;
+                      if (!item.skipComplete) completeStep(item.step);
+                      if (item.step === 0) window.location.href = "/billing/credits";
+                      else if (item.step === 1) window.location.href = "/keys/create";
+                      else window.open(item.href, "_blank");
+                    }}
                     style={{ height: 36, padding: "0 var(--spacing-md)", fontSize: "var(--text-button)", fontWeight: 600, color: done ? "var(--color-muted)" : "var(--color-on-primary)", backgroundColor: done ? "var(--color-surface-card)" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: done ? "default" : "pointer", marginTop: "auto" }}
                   >
                     {done ? "已完成" : item.btn}
@@ -111,12 +147,12 @@ export default function DashboardPage() {
             })}
           </div>
         </div>
-      ) : (
-        /* Compact shortcut bar for returning users */
+      ) : accountMode !== "employee" ? (
+        /* Compact shortcut bar for returning users (personal / org-admin) */
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)" }}>
           {[
+            { icon: "💰", label: "前往充值", desc: "为账户充值，解锁全站模型调用", href: "/billing/credits" },
             { icon: "🔑", label: "继续创建 Key", desc: "创建新的调用 Key，支持路由与风控", href: "/keys/create" },
-            { icon: "🔍", label: "前往模型广场", desc: "浏览可调用的 AI 模型", href: "/models" },
             { icon: "📖", label: "快速开始文档", desc: "查看接入指南与示例代码", href: "https://docs.aliapi.dev" },
           ].map((item, i) => (
             <div
@@ -134,16 +170,52 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
+      ) : null}
+
+      {/* Section 3 — KPI Cards (varies by account mode) */}
+      {accountMode === "org-admin" ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)" }}>
+          <MetricCard label="组织总用量" value="18.4M" change="+15.2%" changeUp onClick={() => window.location.href = "/analytics/usage"} />
+          <MetricCard label="总费用" value="¥ 89,230.00" change="+8.6%" changeUp={false} onClick={() => window.location.href = "/analytics/cost"} />
+          <MetricCard label="组织可用余额" value="¥ 45,200.00" change="含待分配 ¥ 12,000" onClick={() => window.location.href = "/billing"} />
+          <MetricCard label="异常请求" value="487" change="熔断 156 / 超限 281" onClick={() => window.location.href = "/observability?tab=logs&status=error"} />
+          <MetricCard label="保险补偿" value="¥ 5,430.00" change="本周期已赔付" onClick={() => window.location.href = "/insurance"} />
+        </div>
+      ) : accountMode === "employee" ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)" }}>
+          <MetricCard label="可用额度" value="¥ 2,000.00" change="由组织分配" onClick={() => window.location.href = "/billing"} />
+          <MetricCard label="本月个人用量" value="384,200" change="Token" onClick={() => window.location.href = "/analytics/usage"} />
+          <MetricCard label="个人异常请求" value="23" change="熔断 8 / 超限 12" onClick={() => window.location.href = "/observability?tab=logs&status=error"} />
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)" }}>
+          <MetricCard label="总 Token 用量" value="1.28M" change="+12.3%" changeUp onClick={() => window.location.href = "/analytics/usage"} />
+          <MetricCard label="总费用" value="¥ 12,340.50" change="-8.6%" changeUp={false} onClick={() => window.location.href = "/analytics/cost"} />
+          <MetricCard label="可用额度" value="¥ 8,560.00" change="近 7 天过期 ¥ 1,200" onClick={() => window.location.href = "/billing"} />
+          <MetricCard label="异常请求" value="132" change="熔断 47 / 超限 68" onClick={() => window.location.href = "/observability?tab=logs&status=error"} />
+          <MetricCard label="保险补偿" value="¥ 1,230.00" change="本周期已赔付" onClick={() => window.location.href = "/insurance"} />
+        </div>
       )}
 
-      {/* Section 3 — KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)" }}>
-        <MetricCard label="总 Token 用量" value="1.28M" change="+12.3%" changeUp onClick={() => window.location.href = "/analytics/usage"} />
-        <MetricCard label="总费用" value="¥ 12,340.50" change="-8.6%" changeUp={false} onClick={() => window.location.href = "/analytics/cost"} />
-        <MetricCard label="可用额度" value="¥ 8,560.00" change="近 7 天过期 ¥ 1,200" onClick={() => window.location.href = "/billing"} />
-        <MetricCard label="异常请求" value="132" change="熔断 47 / 超限 68" onClick={() => window.location.href = "/observability?tab=logs&status=error"} />
-        <MetricCard label="保险补偿" value="¥ 1,230.00" change="本周期已赔付" onClick={() => window.location.href = "/insurance"} />
-      </div>
+      {/* Section 3.5 — Upgrade prompt (personal only) */}
+      {accountMode === "personal" && (
+        <div
+          style={{ backgroundColor: "var(--color-surface-soft)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-lg)" }}
+        >
+          <div>
+            <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 var(--spacing-xxs)", fontFamily: "var(--font-display)" }}>企业团队协作更高效</h3>
+            <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: 0 }}>
+              升级为组织，统一管理员工额度与账单，享受企业级风控与路由配置。
+            </p>
+          </div>
+          <button
+            onClick={() => setUpgradeOpen(true)}
+            style={{ height: 36, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            升级为组织
+          </button>
+        </div>
+      )}
 
       {/* Section 4 — Trend + Risk (2/3 + 1/3) */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "var(--spacing-lg)", alignItems: "start" }}>
@@ -182,7 +254,11 @@ export default function DashboardPage() {
         {/* Right: Risk panel */}
         <Card title="风险与提醒">
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
-            <RiskCard icon="💰" title="余额即将耗尽" desc="2 个 Key 接近额度上限 · 主账户余额将在 3 天内不足" btnText="去充值" onClick={() => window.location.href = "/billing"} />
+            {accountMode === "employee" ? (
+              <RiskCard icon="⚠️" title="额度不足预警" desc="您当前可用额度较低（¥ 200.00），请联系管理员申请增加额度。" btnText="联系管理员" onClick={() => window.location.href = "/growth/team"} />
+            ) : (
+              <RiskCard icon="💰" title="余额即将耗尽" desc="2 个 Key 接近额度上限 · 主账户余额将在 3 天内不足" btnText="去充值" onClick={() => window.location.href = "/billing"} />
+            )}
             <RiskCard
               icon="⚠️" title="高频错误模型 Top 3"
               desc={
@@ -197,10 +273,43 @@ export default function DashboardPage() {
               }
               btnText="查看日志" onClick={() => window.location.href = "/observability?tab=logs&status=error"}
             />
-            <RiskCard icon="🛡️" title="触发保险最高模型" desc="通义千问 Max — 12 次，¥ 48.00" btnText="查看补偿" onClick={() => window.location.href = "/insurance"} />
+            {accountMode !== "employee" && (
+              <RiskCard icon="🛡️" title="触发保险最高模型" desc="通义千问 Max — 12 次，¥ 48.00" btnText="查看补偿" onClick={() => window.location.href = "/insurance"} />
+            )}
           </div>
         </Card>
       </div>
+
+      {/* Section 5 — Team usage top 5 (org-admin only) */}
+      {accountMode === "org-admin" && (
+        <div style={{ marginTop: "var(--spacing-xl)" }}>
+          <Card title="团队用量 Top 5">
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {TEAM_TOP5.map((item, i) => (
+                <div
+                  key={i}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--spacing-sm) 0", borderBottom: i < TEAM_TOP5.length - 1 ? "1px solid var(--color-hairline-soft)" : "none" }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
+                    <span style={{ width: 22, height: 22, borderRadius: "50%", backgroundColor: i < 3 ? ["#F59E0B", "#9CA3AF", "#D97706"][i] : "var(--color-surface-soft)", color: i < 3 ? "#fff" : "var(--color-muted)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--text-caption)", fontWeight: 600, flexShrink: 0 }}>
+                      {i + 1}
+                    </span>
+                    <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{item.name}</span>
+                  </div>
+                  <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-muted)" }}>{item.usage}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "var(--spacing-md)", textAlign: "right" }}>
+              <a href="/growth/team" style={{ fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-primary)", textDecoration: "none", cursor: "pointer" }}>
+                前往团队管理 →
+              </a>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      <UpgradeOrgModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onSuccess={() => showToast("升级成功，正在刷新")} />
     </div>
   );
 }

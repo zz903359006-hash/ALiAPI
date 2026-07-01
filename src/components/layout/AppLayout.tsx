@@ -2,6 +2,7 @@
 
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import Breadcrumb from "./Breadcrumb";
 
 const SIDEBAR_WIDTH = 216;
 
@@ -24,8 +25,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           className="flex-1 overflow-y-auto"
           style={{
             padding: "var(--spacing-xl)",
+            paddingTop: "var(--spacing-lg)",
           }}
         >
+          <Breadcrumb />
           {children}
         </main>
       </div>

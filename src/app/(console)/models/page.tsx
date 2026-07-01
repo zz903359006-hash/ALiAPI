@@ -1,0 +1,439 @@
+"use client";
+
+import { useState, useCallback, useEffect } from "react";
+import { getRouteTitle } from "@/config/titles";
+import Tabs from "@/components/layout/Tabs";
+import type { TabItem } from "@/components/layout/Tabs";
+
+interface ModelItem {
+  id: string; name: string; nameId: string; category: string; provider: string; providerColor: string;
+  description: string;
+  inputPrice: string; outputPrice: string; inputPriceNum: number; outputPriceNum: number;
+  ctxLen: string; maxOutput: string;
+  hle: number; hleAccuracy: number; hleHallucination: number; hleStability: number; hleLatency: number;
+  inputModes: string[]; outputModes: string[]; capabilities: string[];
+  status: "normal" | "busy" | "maintenance";
+  discount: string;
+  cumulativeUsage: string;
+  supplierCount: number;
+  lastUpdated: string;
+  availability: number;
+  availabilityTrend: number[];
+  suppliers: { name: string; color: string; latency: string; availability: number }[];
+}
+
+const MOCK: ModelItem[] = [
+  { id: "mdl-01", name: "GPT-4o", nameId: "gpt-4o-2024-08-06", category: "对话", provider: "OpenAI", providerColor: "#10A37F", description: "OpenAI 最新多模态旗舰模型，支持文本、图像、音频输入输出，在推理、创造性和多语言任务上表现卓越。", inputPrice: "¥0.035", outputPrice: "¥0.105", inputPriceNum: 0.035, outputPriceNum: 0.105, ctxLen: "128K", maxOutput: "16K", hle: 0.92, hleAccuracy: 0.94, hleHallucination: 3, hleStability: 0.91, hleLatency: 0.88, inputModes: ["text", "image", "audio"], outputModes: ["text", "image"], capabilities: ["流式", "多模态", "长文本"], status: "normal", discount: "", cumulativeUsage: "370.81M", supplierCount: 2, lastUpdated: "2026-06-26 14:00:00", availability: 99.96, availabilityTrend: [100, 100, 100, 99.9, 100, 100, 99.8], suppliers: [{ name: "OpenAI (直接)", color: "#10A37F", latency: "1.2s", availability: 99.98 }, { name: "Microsoft Azure", color: "#0078D4", latency: "1.5s", availability: 99.95 }] },
+  { id: "mdl-02", name: "Claude 3.5 Sonnet", nameId: "claude-3-5-sonnet-20240620", category: "对话", provider: "Anthropic", providerColor: "#D4A574", description: "Anthropic 的高性能模型，擅长长文本理解、代码生成和复杂推理，200K 超长上下文窗口。", inputPrice: "¥0.042", outputPrice: "¥0.126", inputPriceNum: 0.042, outputPriceNum: 0.126, ctxLen: "200K", maxOutput: "8K", hle: 0.89, hleAccuracy: 0.90, hleHallucination: 4, hleStability: 0.92, hleLatency: 0.82, inputModes: ["text", "image"], outputModes: ["text"], capabilities: ["流式", "长文本"], status: "normal", discount: "", cumulativeUsage: "215.40M", supplierCount: 2, lastUpdated: "2026-06-25 08:30:00", availability: 99.92, availabilityTrend: [100, 100, 99.9, 100, 100, 99.8, 100], suppliers: [{ name: "Anthropic (直接)", color: "#D4A574", latency: "1.8s", availability: 99.92 }, { name: "AWS Bedrock", color: "#FF9900", latency: "2.1s", availability: 99.88 }] },
+  { id: "mdl-03", name: "通义千问 Max", nameId: "qwen-max-2025", category: "对话", provider: "阿里云", providerColor: "#FF6A00", description: "阿里云通义系列最强模型，中文能力领先，支持长文本理解和多轮对话，性价比极高。", inputPrice: "¥0.028", outputPrice: "¥0.084", inputPriceNum: 0.028, outputPriceNum: 0.084, ctxLen: "32K", maxOutput: "8K", hle: 0.82, hleAccuracy: 0.84, hleHallucination: 7, hleStability: 0.85, hleLatency: 0.80, inputModes: ["text"], outputModes: ["text"], capabilities: ["流式", "长文本"], status: "normal", discount: "52% 折扣", cumulativeUsage: "189.20M", supplierCount: 2, lastUpdated: "2026-06-24 16:00:00", availability: 99.85, availabilityTrend: [100, 99.9, 100, 100, 99.7, 100, 99.9], suppliers: [{ name: "阿里云 (直接)", color: "#FF6A00", latency: "0.8s", availability: 99.92 }, { name: "华为云", color: "#CF0A2C", latency: "1.0s", availability: 99.85 }] },
+  { id: "mdl-04", name: "DeepSeek V3", nameId: "deepseek-v3-0324", category: "对话", provider: "DeepSeek", providerColor: "#4F46E5", description: "DeepSeek 最新旗舰模型，极低价格，优秀的中文和代码能力，适合高并发大规模调用。", inputPrice: "¥0.005", outputPrice: "¥0.015", inputPriceNum: 0.005, outputPriceNum: 0.015, ctxLen: "64K", maxOutput: "8K", hle: 0.85, hleAccuracy: 0.87, hleHallucination: 6, hleStability: 0.88, hleLatency: 0.93, inputModes: ["text"], outputModes: ["text"], capabilities: ["流式", "长文本"], status: "busy", discount: "", cumulativeUsage: "452.10M", supplierCount: 3, lastUpdated: "2026-06-26 10:00:00", availability: 97.50, availabilityTrend: [100, 100, 98, 95, 97, 99, 97], suppliers: [{ name: "DeepSeek (直接)", color: "#4F46E5", latency: "0.6s", availability: 98.50 }, { name: "火山引擎", color: "#1E6FFF", latency: "0.9s", availability: 97.80 }, { name: "腾讯云", color: "#00A4FF", latency: "1.1s", availability: 96.20 }] },
+  { id: "mdl-05", name: "GPT-4o (代码)", nameId: "gpt-4o-code", category: "代码", provider: "OpenAI", providerColor: "#10A37F", description: "GPT-4o 针对代码生成与调试优化版本，支持多语言代码补全和解释。", inputPrice: "¥0.035", outputPrice: "¥0.105", inputPriceNum: 0.035, outputPriceNum: 0.105, ctxLen: "128K", maxOutput: "16K", hle: 0.88, hleAccuracy: 0.90, hleHallucination: 5, hleStability: 0.86, hleLatency: 0.85, inputModes: ["text"], outputModes: ["text"], capabilities: ["流式"], status: "normal", discount: "", cumulativeUsage: "98.30M", supplierCount: 1, lastUpdated: "2026-06-23 12:00:00", availability: 99.90, availabilityTrend: [100, 100, 100, 100, 99.9, 100, 99.8], suppliers: [{ name: "OpenAI (直接)", color: "#10A37F", latency: "1.1s", availability: 99.90 }] },
+  { id: "mdl-06", name: "DALL·E 3", nameId: "dalle-3", category: "图像生成", provider: "OpenAI", providerColor: "#10A37F", description: "OpenAI 最新图像生成模型，支持高质量文本到图像生成，适用于创意设计场景。", inputPrice: "¥0.080", outputPrice: "—", inputPriceNum: 0.080, outputPriceNum: 0, ctxLen: "—", maxOutput: "—", hle: 0.75, hleAccuracy: 0.78, hleHallucination: 12, hleStability: 0.72, hleLatency: 0.60, inputModes: ["text"], outputModes: ["image"], capabilities: [], status: "maintenance", discount: "", cumulativeUsage: "24.50M", supplierCount: 1, lastUpdated: "2026-06-20 09:00:00", availability: 88.20, availabilityTrend: [95, 92, 88, 85, 90, 88, 88], suppliers: [{ name: "OpenAI (直接)", color: "#10A37F", latency: "2.5s", availability: 88.20 }] },
+];
+
+function recommendationTags(m: ModelItem): string[] {
+  const tags: string[] = [];
+  if (m.hle >= 0.90) tags.push("高质量");
+  if (m.hle >= 0.85 && m.hle < 0.90) tags.push("高性价比");
+  if (m.inputPriceNum <= 0.01) tags.push("低成本");
+  if (m.hleLatency >= 0.90) tags.push("低延迟");
+  const ctx = parseInt(m.ctxLen) || 0;
+  if (ctx >= 128) tags.push("长上下文");
+  if (m.capabilities.includes("代码") || m.name.includes("代码")) tags.push("适合代码");
+  if (m.name === "GPT-4o" || m.availability >= 99.9) tags.push("热门");
+  return tags.slice(0, 2);
+}
+
+const CATS = ["全部", "对话", "代码", "多模态", "图像生成", "嵌入"];
+const CAPS = ["流式", "多模态", "长文本"];
+const SORTS = ["综合推荐", "价格从低到高", "价格从高到低", "HLE 评分", "上下文长度"];
+const PROVIDERS = ["全部", ...new Set(MOCK.map((m) => m.provider))];
+
+export default function ModelsPage() {
+  const [category, setCategory] = useState("全部");
+  const [provider, setProvider] = useState("全部");
+  const [sort, setSort] = useState("综合推荐");
+  const [view, setView] = useState<"grid" | "list">("grid");
+  const [activeCaps, setActiveCaps] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [detail, setDetail] = useState<ModelItem | null>(null);
+  const [toast, setToast] = useState("");
+  const [preferredModels, setPreferredModels] = useState<Set<string>>(new Set());
+  const [blacklistedModels, setBlacklistedModels] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [compareList, setCompareList] = useState<ModelItem[]>([]);
+  const [showCompare, setShowCompare] = useState(false);
+  const [sortInfo, setSortInfo] = useState(false);
+
+  useEffect(() => { const t = setTimeout(() => setLoading(false), 600); return () => clearTimeout(t); }, []);
+
+  const toggleCap = (c: string) => setActiveCaps((p) => { const n = new Set(p); n.has(c) ? n.delete(c) : n.add(c); return n; });
+  const clearFilters = () => { setCategory("全部"); setProvider("全部"); setSort("综合推荐"); setActiveCaps(new Set()); setSearch(""); };
+  const copy = useCallback((id: string) => { navigator.clipboard.writeText(id); setToast("已复制到剪贴板"); setTimeout(() => setToast(""), 2000); }, []);
+
+  const togglePreferred = useCallback((id: string) => {
+    setPreferredModels((prev) => { const next = new Set(prev); if (next.has(id)) { next.delete(id); setToast("已取消优选"); } else { next.add(id); setToast("已设为优选"); } setTimeout(() => setToast(""), 2000); return next; });
+  }, []);
+
+  const toggleBlacklisted = useCallback((id: string) => {
+    setBlacklistedModels((prev) => { const next = new Set(prev); if (next.has(id)) { next.delete(id); setToast("已移出黑名单"); } else { next.add(id); setToast("已加入黑名单"); } setTimeout(() => setToast(""), 2000); return next; });
+  }, []);
+
+  const toggleCompare = (m: ModelItem) => {
+    setCompareList((prev) => {
+      const idx = prev.findIndex((x) => x.id === m.id);
+      if (idx >= 0) return prev.filter((x) => x.id !== m.id);
+      if (prev.length >= 3) { setToast("最多可对比 3 个模型"); setTimeout(() => setToast(""), 2000); return prev; }
+      setToast("已加入对比"); setTimeout(() => setToast(""), 2000);
+      return [...prev, m];
+    });
+  };
+
+  const clearCompare = () => setCompareList([]);
+
+  let data = MOCK;
+  if (category !== "全部") data = data.filter((m) => m.category === category);
+  if (provider !== "全部") data = data.filter((m) => m.provider === provider);
+  if (activeCaps.size > 0) data = data.filter((m) => [...activeCaps].every((c) => m.capabilities.includes(c)));
+  if (search) { const q = search.toLowerCase(); data = data.filter((m) => m.name.toLowerCase().includes(q) || m.nameId.toLowerCase().includes(q)); }
+  if (sort === "价格从低到高") data = [...data].sort((a, b) => a.inputPriceNum - b.inputPriceNum);
+  else if (sort === "价格从高到低") data = [...data].sort((a, b) => b.inputPriceNum - a.inputPriceNum);
+  else if (sort === "HLE 评分") data = [...data].sort((a, b) => b.hle - a.hle);
+  else if (sort === "上下文长度") data = [...data].sort((a, b) => (parseInt(b.ctxLen) || 0) - (parseInt(a.ctxLen) || 0));
+
+  const hasFilters = category !== "全部" || provider !== "全部" || activeCaps.size > 0 || search;
+  const filterTags: { label: string; onRemove: () => void }[] = [];
+  if (category !== "全部") filterTags.push({ label: `类型：${category}`, onRemove: () => setCategory("全部") });
+  if (provider !== "全部") filterTags.push({ label: `厂商：${provider}`, onRemove: () => setProvider("全部") });
+  activeCaps.forEach((c) => filterTags.push({ label: `能力：${c}`, onRemove: () => toggleCap(c) }));
+  if (search) filterTags.push({ label: `搜索：${search}`, onRemove: () => setSearch("") });
+
+  return (
+    <div>
+      {toast && <Toast msg={toast} />}
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "var(--spacing-xl)", gap: "var(--spacing-md)" }}>
+        <div>
+          <h1 style={{ fontSize: "var(--text-display-md)", fontWeight: 600, color: "var(--color-ink)", fontFamily: "var(--font-display)" }}>{getRouteTitle("/models")}</h1>
+          <p style={{ marginTop: "var(--spacing-xs)", fontSize: "var(--text-body-sm)", color: "var(--color-muted)" }}>浏览可调用的 AI 模型，按能力和价格选择最适合的模型。</p>
+        </div>
+        <TxtBtn>查看文档</TxtBtn>
+      </div>
+
+      {/* Filter bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", marginBottom: "var(--spacing-xs)", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", height: 40, paddingLeft: "var(--spacing-sm)", paddingRight: "var(--spacing-sm)", gap: "var(--spacing-xs)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", fontSize: "var(--text-body-sm)", minWidth: 200, flex: "0 1 260px" }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ color: "var(--color-muted)" }}><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" /><path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="搜索模型名称或标识…" style={{ border: "none", background: "none", outline: "none", flex: 1, fontSize: "var(--text-body-sm)", color: "var(--color-ink)", minWidth: 0 }} />
+        </div>
+        <Sel value={category} onChange={setCategory} options={CATS} />
+        <Sel value={provider} onChange={setProvider} options={PROVIDERS} />
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <Sel value={sort} onChange={setSort} options={SORTS} />
+          <div style={{ position: "relative" }}>
+            <span style={{ fontSize: 14, color: "var(--color-muted-soft)", cursor: "pointer" }} onMouseEnter={() => setSortInfo(true)} onMouseLeave={() => setSortInfo(false)}>ⓘ</span>
+            {sortInfo && (
+              <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", zIndex: 20, width: 220, padding: "var(--spacing-sm)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", fontSize: "var(--text-caption)", color: "var(--color-body)", lineHeight: 1.5, pointerEvents: "none" }}>
+                综合推荐会优先参考价格、HLE 质量评分、可用率与调用热度。
+              </div>
+            )}
+          </div>
+        </div>
+        {CAPS.map((c) => { const active = activeCaps.has(c); return <Pill key={c} active={active} onClick={() => toggleCap(c)}>{c}</Pill>; })}
+        {hasFilters && <TxtBtn onClick={clearFilters} style={{ fontSize: "var(--text-caption)" }}>清除</TxtBtn>}
+        <div style={{ marginLeft: "auto", display: "flex", padding: "var(--spacing-xxs)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-md)", flexShrink: 0 }}>
+          <ViewBtn active={view === "grid"} onClick={() => setView("grid")}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+          </ViewBtn>
+          <ViewBtn active={view === "list"} onClick={() => setView("list")}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>
+          </ViewBtn>
+        </div>
+      </div>
+
+      {/* Active filters bar */}
+      {filterTags.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xxs)", marginBottom: "var(--spacing-md)", flexWrap: "wrap" }}>
+          {filterTags.map((tag, i) => (
+            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, height: 26, paddingLeft: 8, paddingRight: 6, fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-muted)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-pill)" }}>
+              {tag.label}
+              <button onClick={tag.onRemove} style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", padding: 0, fontSize: 12, lineHeight: 1 }}>✕</button>
+            </span>
+          ))}
+          {filterTags.length > 1 && <TxtBtn onClick={clearFilters} style={{ fontSize: "var(--text-caption)", marginLeft: 4 }}>清除全部</TxtBtn>}
+        </div>
+      )}
+
+      {/* Content */}
+      {loading ? <Skeleton /> : view === "grid" ? (
+        <ModelsGrid data={data} onDetail={setDetail} onCopy={copy} onClear={clearFilters} compareList={compareList} onToggleCompare={toggleCompare} />
+      ) : (
+        <ModelsList data={data} onDetail={setDetail} onCopy={copy} onClear={clearFilters} preferredModels={preferredModels} blacklistedModels={blacklistedModels} onTogglePreferred={togglePreferred} onToggleBlacklisted={toggleBlacklisted} />
+      )}
+
+      {/* Compare Drawer */}
+      {showCompare && compareList.length > 0 && (
+        <CompareDrawer models={compareList} onClose={() => setShowCompare(false)} onDetail={setDetail} />
+      )}
+
+      {/* Model Detail Drawer */}
+      <ModelDrawer
+        data={detail}
+        onClose={() => setDetail(null)}
+        preferredModels={preferredModels}
+        blacklistedModels={blacklistedModels}
+        onTogglePreferred={togglePreferred}
+        onToggleBlacklisted={toggleBlacklisted}
+      />
+
+      {/* Compare bottom bar */}
+      {compareList.length > 0 && (
+        <div style={{ position: "fixed", bottom: 0, left: 216, right: 0, zIndex: 40, backgroundColor: "var(--color-canvas)", borderTop: "1px solid var(--color-hairline)", padding: "var(--spacing-sm) var(--spacing-lg)", display: "flex", alignItems: "center", gap: "var(--spacing-md)", boxShadow: "0 -2px 8px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", gap: "var(--spacing-sm)", flex: 1, minWidth: 0 }}>
+            {compareList.map((m) => (
+              <button key={m.id} onClick={() => setCompareList((prev) => prev.filter((x) => x.id !== m.id))} style={{ display: "flex", alignItems: "center", gap: 4, height: 32, padding: "0 8px", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-surface-soft)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: m.providerColor, flexShrink: 0 }} />
+                {m.name}
+                <span style={{ marginLeft: 2, fontSize: 11, color: "var(--color-muted)" }}>✕</span>
+              </button>
+            ))}
+          </div>
+          <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", whiteSpace: "nowrap" }}>已选择 {compareList.length}/3 个模型</span>
+          <button onClick={clearCompare} style={{ height: 32, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>清空</button>
+          <button onClick={() => setShowCompare(true)} style={{ height: 32, padding: "0 var(--spacing-md)", fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer" }}>开始对比</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* Grid */
+function ModelsGrid({ data, onDetail, onCopy, onClear, compareList, onToggleCompare }: { data: ModelItem[]; onDetail: (m: ModelItem) => void; onCopy: (id: string) => void; onClear: () => void; compareList: ModelItem[]; onToggleCompare: (m: ModelItem) => void; }) {
+  if (data.length === 0) return <Empty onClear={onClear} />;
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))", gap: "var(--spacing-lg)", marginBottom: compareList.length > 0 ? 64 : undefined }}>
+      {data.map((m) => <ModelCard key={m.id} data={m} onDetail={onDetail} onCopy={onCopy} isComparing={compareList.some((x) => x.id === m.id)} onToggleCompare={() => onToggleCompare(m)} />)}
+    </div>
+  );
+}
+
+function ModelCard({ data: m, onDetail, onCopy, isComparing, onToggleCompare }: { data: ModelItem; onDetail: (m: ModelItem) => void; onCopy: (id: string) => void; isComparing?: boolean; onToggleCompare?: () => void; }) {
+  return (
+    <div className="group/card"
+      onClick={() => onDetail(m)}
+      style={{ backgroundColor: "var(--color-canvas)", border: `1px solid ${isComparing ? "var(--color-primary)" : "var(--color-hairline)"}`, borderRadius: "var(--radius-lg)", padding: "var(--spacing-lg)", cursor: "pointer", transition: "all 0.2s", position: "relative" }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.borderColor = isComparing ? "var(--color-primary)" : "#d1d5db"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = isComparing ? "var(--color-primary)" : "var(--color-hairline)"; }}
+    >
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "var(--spacing-md)" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--spacing-sm)", minWidth: 0 }}>
+          <span style={{ width: 34, height: 34, borderRadius: "var(--radius-md)", backgroundColor: m.providerColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{m.provider.charAt(0)}</span>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", lineHeight: 1.3 }}>{m.name}</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.nameId}</span>
+              <button onClick={(e) => { e.stopPropagation(); onCopy(m.nameId); }} style={{ width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", padding: 0, flexShrink: 0 }} title="复制 ID"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg></button>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
+          {m.discount && <span style={{ fontSize: 11, fontWeight: 600, color: "#B45309", backgroundColor: "#FEF3C7", padding: "1px 7px", borderRadius: "var(--radius-sm)", whiteSpace: "nowrap" }}>{m.discount}</span>}
+          <StatusDot s={m.status} />
+        </div>
+      </div>
+      <div style={{ marginBottom: "var(--spacing-md)" }}>
+        <span style={{ fontSize: 20, fontWeight: 700, color: "var(--color-ink)", fontFamily: "var(--font-display)", lineHeight: 1 }}>{m.cumulativeUsage}</span>
+        <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginLeft: 4 }}>tokens</span>
+      </div>
+      {recommendationTags(m).length > 0 && (
+        <div style={{ display: "flex", gap: "var(--spacing-xxs)", marginBottom: "var(--spacing-sm)", flexWrap: "wrap" }}>
+          {recommendationTags(m).map((tag) => <span key={tag} style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: "#2563EB", backgroundColor: "#EFF6FF", padding: "2px 10px", borderRadius: "var(--radius-pill)", lineHeight: "20px" }}>{tag}</span>)}
+        </div>
+      )}
+      <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", lineHeight: 1.5, marginBottom: "var(--spacing-md)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{m.description}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-sm)", padding: "var(--spacing-sm) 0", borderTop: "1px solid var(--color-hairline-soft)", borderBottom: "1px solid var(--color-hairline-soft)", marginBottom: "var(--spacing-md)" }}>
+        <div><div style={{ display: "flex", gap: 2, marginBottom: 4 }}>{m.inputModes.map((t) => <ModeIcon key={t} type={t} />)}</div><div style={{ fontSize: 10, color: "var(--color-muted)", marginBottom: 1 }}>输入价格</div><div style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-success)" }}>{m.inputPrice}</div><div style={{ fontSize: 10, color: "var(--color-muted)", marginTop: 4 }}>上下文</div><div style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)" }}>{m.ctxLen}</div></div>
+        <div><div style={{ display: "flex", gap: 2, marginBottom: 4 }}>{m.outputModes.map((t) => <ModeIcon key={t} type={t} />)}</div><div style={{ fontSize: 10, color: "var(--color-muted)", marginBottom: 1 }}>输出价格</div><div style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-success)" }}>{m.outputPrice}</div><div style={{ fontSize: 10, color: "var(--color-muted)", marginTop: 4 }}>最大输出</div><div style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)" }}>{m.maxOutput}</div></div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 10, color: "var(--color-muted)" }}>
+        <span>可用于 {m.supplierCount} 个供应商</span>
+        <span>{m.lastUpdated}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ color: m.availability >= 99 ? "var(--color-success)" : m.availability >= 95 ? "var(--color-warning)" : "var(--color-error)", fontWeight: 500 }}>{m.availability.toFixed(2)}%</span>
+          <div style={{ display: "flex", gap: 1, height: 10, alignItems: "flex-end" }}>{m.availabilityTrend.map((v, i) => <div key={i} style={{ width: 3, height: `${(v / 100) * 10}px`, backgroundColor: v >= 99 ? "var(--color-success)" : v >= 95 ? "var(--color-warning)" : "var(--color-error)", borderRadius: 1 }} />)}</div>
+        </div>
+      </div>
+      {/* Hover overlay */}
+      <div className="opacity-0 group-hover/card:opacity-100 transition-opacity duration-150" style={{ position: "absolute", top: 10, right: 10, display: "flex", gap: 6, zIndex: 1 }}>
+        <button onClick={(e) => { e.stopPropagation(); onDetail(m); }} style={{ height: 28, padding: "0 10px", fontSize: 12, fontWeight: 500, color: "var(--color-ink)", backgroundColor: "rgba(255,255,255,0.95)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>查看详情</button>
+        <button onClick={(e) => { e.stopPropagation(); window.location.href = `/keys/create?model=${m.nameId}`; }} style={{ height: 28, padding: "0 10px", fontSize: 12, fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }}>创建 Key</button>
+        <button onClick={(e) => { e.stopPropagation(); onToggleCompare?.(); }} style={{ height: 28, width: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500, color: isComparing ? "var(--color-on-primary)" : "var(--color-ink)", backgroundColor: isComparing ? "var(--color-primary)" : "rgba(255,255,255,0.95)", border: `1px solid ${isComparing ? "transparent" : "var(--color-hairline)"}`, borderRadius: "var(--radius-sm)", cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }} title={isComparing ? "移出对比" : "加入对比"}>{isComparing ? "✓" : "+"}</button>
+      </div>
+    </div>
+  );
+}
+
+function ModelsList({ data, onDetail, onCopy, onClear, preferredModels, blacklistedModels, onTogglePreferred, onToggleBlacklisted }: { data: ModelItem[]; onDetail: (m: ModelItem) => void; onCopy: (id: string) => void; onClear: () => void; preferredModels: Set<string>; blacklistedModels: Set<string>; onTogglePreferred: (id: string) => void; onToggleBlacklisted: (id: string) => void; }) {
+  if (data.length === 0) return <Empty onClear={onClear} />;
+  return (
+    <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", overflow: "auto" }}>
+      <table style={{ width: "100%", minWidth: 850, borderCollapse: "collapse" }}>
+        <thead><tr style={{ backgroundColor: "#F9FAFB" }}><Th2>模型</Th2><Th2>类型</Th2><Th2>输入</Th2><Th2>输出</Th2><Th2>上下文</Th2><Th2>状态</Th2><Th2>可用率</Th2><Th2 right>操作</Th2></tr></thead>
+        <tbody>{data.map((m) => (
+          <tr key={m.id} onClick={() => onDetail(m)} style={{ height: 48, cursor: "pointer" }} onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-soft)"; }} onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}>
+            <Td2><div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}><span style={{ width: 28, height: 28, borderRadius: "var(--radius-sm)", backgroundColor: m.providerColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{m.provider.charAt(0)}</span><div><div style={{ fontWeight: 600, color: "var(--color-ink)", fontSize: "var(--text-body-sm)" }}>{m.name}</div><div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{m.nameId}</div></div></div></Td2>
+            <Td2 style={{ color: "var(--color-muted)" }}>{m.category}</Td2>
+            <Td2 style={{ fontWeight: 500, color: "var(--color-success)" }}>{m.inputPrice}</Td2>
+            <Td2 style={{ fontWeight: 500, color: "var(--color-success)" }}>{m.outputPrice}</Td2>
+            <Td2 style={{ color: "var(--color-body)" }}>{m.ctxLen}</Td2>
+            <Td2><StatusDot s={m.status} /></Td2>
+            <Td2><div style={{ display: "flex", alignItems: "center", gap: 4 }}><span style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: m.availability >= 99 ? "var(--color-success)" : "var(--color-warning)" }}>{m.availability.toFixed(1)}%</span><div style={{ display: "flex", gap: 1, height: 8, alignItems: "flex-end" }}>{m.availabilityTrend.slice(-5).map((v, i) => <div key={i} style={{ width: 3, height: `${(v / 100) * 8}px`, backgroundColor: v >= 99 ? "var(--color-success)" : v >= 95 ? "var(--color-warning)" : "var(--color-error)", borderRadius: 1 }} />)}</div></div></Td2>
+            <Td2 right><div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}><LBtn onClick={(e) => { e?.stopPropagation(); onCopy(m.nameId); }}>复制</LBtn><LBtn onClick={(e) => { e?.stopPropagation(); onDetail(m); }}>详情</LBtn></div></Td2>
+          </tr>
+        ))}</tbody>
+      </table>
+    </div>
+  );
+}
+
+/* Compare Drawer */
+function CompareDrawer({ models, onClose, onDetail }: { models: ModelItem[]; onClose: () => void; onDetail: (m: ModelItem) => void; }) {
+  const fields = [
+    { label: "模型 ID", get: (m: ModelItem) => m.nameId },
+    { label: "输入价格", get: (m: ModelItem) => m.inputPrice },
+    { label: "输出价格", get: (m: ModelItem) => m.outputPrice },
+    { label: "上下文长度", get: (m: ModelItem) => m.ctxLen },
+    { label: "最大输出", get: (m: ModelItem) => m.maxOutput },
+    { label: "HLE 综合分", get: (m: ModelItem) => m.hle.toFixed(2), color: (m: ModelItem) => m.hle >= 0.8 ? "var(--color-success)" : m.hle >= 0.6 ? "var(--color-warning)" : "var(--color-error)" },
+    { label: "可用率", get: (m: ModelItem) => `${m.availability.toFixed(1)}%` },
+    { label: "供应商数", get: (m: ModelItem) => `${m.supplierCount} 个` },
+    { label: "推荐标签", get: (m: ModelItem) => recommendationTags(m).join("、") || "—" },
+  ];
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50" style={{ backgroundColor: "rgba(0,0,0,0.3)" }} onClick={onClose} />
+      <div className="fixed top-0 right-0 h-full z-50 flex flex-col" style={{ width: 640, maxWidth: "100vw", backgroundColor: "var(--color-canvas)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--spacing-lg)", borderBottom: "1px solid var(--color-hairline)" }}>
+          <span style={{ fontSize: "var(--text-title-md)", fontWeight: 600, color: "var(--color-ink)" }}>模型对比</span>
+          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer" }}><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg></button>
+        </div>
+
+        {/* Top: model name cards */}
+        <div style={{ display: "flex", gap: "var(--spacing-sm)", padding: "var(--spacing-lg)", borderBottom: "1px solid var(--color-hairline-soft)" }}>
+          {models.map((m) => (
+            <div key={m.id} style={{ flex: 1, textAlign: "center", padding: "var(--spacing-md)", backgroundColor: "var(--color-surface-soft)", borderRadius: "var(--radius-md)" }}>
+              <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{m.name}</div>
+              <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 2 }}>{m.provider}</div>
+              <div style={{ marginTop: "var(--spacing-sm)", display: "flex", gap: "var(--spacing-xs)", justifyContent: "center" }}>
+                <button onClick={() => { onClose(); window.location.href = `/keys/create?model=${m.nameId}`; }} style={{ height: 28, padding: "0 8px", fontSize: 12, fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>创建 Key</button>
+                <button onClick={() => { onClose(); onDetail(m); }} style={{ height: 28, padding: "0 8px", fontSize: 12, fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>详情</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom: comparison table */}
+        <div className="flex-1 overflow-y-auto" style={{ padding: "var(--spacing-lg)" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <tbody>
+              {fields.map((f) => (
+                <tr key={f.label} style={{ borderBottom: "1px solid var(--color-hairline-soft)" }}>
+                  <td style={{ padding: "var(--spacing-sm) var(--spacing-md)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-muted)", whiteSpace: "nowrap", width: 100 }}>{f.label}</td>
+                  {models.map((m) => (
+                    <td key={m.id} style={{ padding: "var(--spacing-sm) var(--spacing-md)", fontSize: "var(--text-body-sm)", color: f.color?.(m) || "var(--color-ink)", fontWeight: f.label === "HLE 综合分" ? 600 : 400, textAlign: "center" }}>{f.get(m)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* Sub components */
+function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogglePreferred, onToggleBlacklisted }: { data: ModelItem | null; onClose: () => void; preferredModels: Set<string>; blacklistedModels: Set<string>; onTogglePreferred: (id: string) => void; onToggleBlacklisted: (id: string) => void; }) {
+  const [toast, setToast] = useState("");
+  if (!data) return null;
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2000); };
+  return (
+    <>
+      {toast && <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 999, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{toast}</div>}
+      <div className="fixed inset-0 z-50" style={{ backgroundColor: "rgba(0,0,0,0.2)" }} onClick={onClose} />
+      <div className="fixed top-0 right-0 h-full z-50 flex flex-col" style={{ width: 520, maxWidth: "100vw", backgroundColor: "var(--color-canvas)", boxShadow: "0 8px 32px rgba(0,0,0,0.08)" }}>
+        <div className="flex items-start justify-between shrink-0" style={{ padding: "var(--spacing-xl) var(--spacing-xl) 0" }}>
+          <div style={{ display: "flex", gap: "var(--spacing-md)", alignItems: "flex-start", minWidth: 0 }}>
+            <span style={{ width: 44, height: 44, borderRadius: "var(--radius-md)", backgroundColor: data.providerColor, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 700, flexShrink: 0 }}>{data.provider.charAt(0)}</span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)", fontFamily: "var(--font-display)" }}>{data.name}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", fontFamily: "var(--font-mono)" }}>{data.nameId}</span>
+                <button onClick={() => { navigator.clipboard.writeText(data.nameId); showToast("已复制模型 ID"); }} style={{ width: 18, height: 18, border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", padding: 0, flexShrink: 0 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg></button>
+              </div>
+              <div style={{ display: "flex", gap: "var(--spacing-xs)", marginTop: "var(--spacing-xs)" }}><StatusDot s={data.status} />{data.discount && <span style={{ fontSize: 11, fontWeight: 600, color: "#B45309", backgroundColor: "#FEF3C7", padding: "1px 7px", borderRadius: "var(--radius-sm)" }}>{data.discount}</span>}</div>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--radius-full)", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", flexShrink: 0 }}><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg></button>
+        </div>
+        <div className="flex-1 overflow-y-auto" style={{ padding: "var(--spacing-xl)" }}>
+          <DSec t="简介"><p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.7, margin: 0 }}>{data.description}</p></DSec>
+          <DSec t="价格与规格"><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-md)" }}>
+            <div><div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}><SpecRow label="输入价格" value={data.inputPrice} valueColor="var(--color-success)" /><SpecRow label="上下文长度" value={data.ctxLen} /><SpecRow label="输入类型" value={<div style={{ display: "flex", gap: 2 }}>{data.inputModes.map((t) => <ModeIcon key={t} type={t} />)}</div>} /></div></div>
+            <div><div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}><SpecRow label="输出价格" value={data.outputPrice} valueColor="var(--color-success)" /><SpecRow label="最大输出" value={data.maxOutput} /><SpecRow label="输出类型" value={<div style={{ display: "flex", gap: 2 }}>{data.outputModes.map((t) => <ModeIcon key={t} type={t} />)}</div>} /></div></div>
+          </div><div style={{ marginTop: "var(--spacing-sm)", fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>按每 1,000 Tokens 计费 · 输入/输出分别计费</div></DSec>
+          <DSec t="HLE 质量评分"><div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-md)" }}>
+            <div style={{ width: 72, height: 72, borderRadius: "50%", border: `3px solid ${data.hle >= 0.8 ? "var(--color-success)" : "var(--color-warning)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ fontSize: 20, fontWeight: 700, color: data.hle >= 0.8 ? "var(--color-success)" : "var(--color-warning)", fontFamily: "var(--font-display)" }}>{data.hle.toFixed(1)}</span></div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>{[["准确率", data.hleAccuracy * 100], ["稳定性", data.hleStability * 100], ["延迟", data.hleLatency * 100], ["幻觉率", data.hleHallucination]].map(([k, v]) => (<div key={k as string} style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", width: 48 }}>{k as string}</span><div style={{ flex: 1, height: 5, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}><div style={{ width: `${Math.min((v as number), 100)}%`, height: "100%", backgroundColor: (v as number) >= 80 ? "var(--color-success)" : (v as number) >= 50 ? "var(--color-warning)" : "var(--color-error)", borderRadius: "var(--radius-full)" }} /></div><span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-ink)", width: 36, textAlign: "right" }}>{k === "幻觉率" ? `${(v as number)}%` : `${(v as number).toFixed(0)}%`}</span></div>))}</div>
+          </div></DSec>
+          <DSec t="能力标签"><div style={{ display: "flex", gap: "var(--spacing-xs)" }}>{data.capabilities.map((c) => <span key={c} style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", backgroundColor: "var(--color-surface-card)", padding: "2px 10px", borderRadius: "var(--radius-pill)" }}>{c}</span>)}</div></DSec>
+          <DSec t={`供应商（${data.suppliers.length} 个）`}>{data.suppliers.map((s, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", padding: "var(--spacing-sm) 0", borderBottom: i < data.suppliers.length - 1 ? "1px solid var(--color-hairline-soft)" : "none" }}><span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: s.color, flexShrink: 0 }} /><span style={{ flex: 1, fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{s.name}</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", width: 40, textAlign: "right" }}>{s.latency}</span><span style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: s.availability >= 99 ? "var(--color-success)" : s.availability >= 95 ? "var(--color-warning)" : "var(--color-error)", width: 48, textAlign: "right" }}>{s.availability.toFixed(1)}%</span></div>))}</DSec>
+          <DSec t="快速开始"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>复制以下代码，将 base_url 和 authorization 替换为你创建的 ALiAPI Key 即可发起调用。</p><QuickCode modelId={data.nameId} /></DSec>
+        </div>
+        <div style={{ padding: "var(--spacing-md) var(--spacing-lg)", borderTop: "1px solid var(--color-hairline)", backgroundColor: "var(--color-canvas)" }}>
+          <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+            <button onClick={() => { onClose(); window.location.href = `/keys/create?model=${data.nameId}`; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>使用此模型创建 Key</button>
+            <button onClick={() => { onTogglePreferred(data.id); showToast(preferredModels.has(data.id) ? "已从路由优选名单移除" : "已加入全局路由优选名单"); }} style={{ height: 40, padding: "0 var(--spacing-sm)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>{preferredModels.has(data.id) ? "★ 已优选" : "☆ 设为优选"}</button>
+            <button onClick={() => { onToggleBlacklisted(data.id); showToast(blacklistedModels.has(data.id) ? "已从路由黑名单移除" : "已加入全局路由黑名单"); }} style={{ height: 40, padding: "0 var(--spacing-sm)", fontSize: "var(--text-button)", fontWeight: 600, color: blacklistedModels.has(data.id) ? "var(--color-error)" : "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>{blacklistedModels.has(data.id) ? "🚫 已黑名单" : "加入黑名单"}</button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function QuickCode({ modelId }: { modelId: string }) {
+  const [tab, setTab] = useState("curl");
+  const curl = `curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer sk-your-key-here" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const python = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="sk-your-key-here"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
+  const node = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "sk-your-key-here",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
+  const codeTabs: TabItem[] = [{ key: "curl", label: "cURL", content: <CodeSnippet code={curl} /> }, { key: "python", label: "Python", content: <CodeSnippet code={python} /> }, { key: "node", label: "Node.js", content: <CodeSnippet code={node} /> }];
+  return <Tabs tabs={codeTabs} activeKey={tab} onChange={setTab} />;
+}
+
+function CodeSnippet({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  return (<div style={{ position: "relative", backgroundColor: "#1e1e1e", borderRadius: "var(--radius-md)", overflow: "hidden", marginTop: 4 }}>
+    <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }} style={{ position: "absolute", top: 8, right: 8, zIndex: 1, height: 30, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: copied ? "#10b981" : "#a1a1aa", backgroundColor: "rgba(255,255,255,0.08)", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>{copied ? "已复制" : "复制"}</button>
+    <pre style={{ margin: 0, padding: "var(--spacing-md)", overflow: "auto", fontSize: 13, lineHeight: 1.6, fontFamily: "var(--font-mono)", color: "#d4d4d4", whiteSpace: "pre-wrap" }}>{code}</pre>
+  </div>);
+}
+
+function StatusDot({ s }: { s: string }) { const m: Record<string, { l: string; c: string }> = { normal: { l: "正常", c: "#10B981" }, busy: { l: "拥挤", c: "#D97706" }, maintenance: { l: "维护", c: "#EF4444" } }; const v = m[s] ?? m.normal; return <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 500, color: v.c, whiteSpace: "nowrap" }}><span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: v.c, flexShrink: 0 }} />{v.l}</span>; }
+function ModeIcon({ type, size = 14 }: { type: string; size?: number }) { const s = size; if (type === "text") return <span style={{ width: s, height: s, borderRadius: 3, backgroundColor: "#E0E7FF", color: "#4338CA", display: "flex", alignItems: "center", justifyContent: "center", fontSize: s * 0.55, fontWeight: 700, flexShrink: 0 }} title="文本">T</span>; if (type === "image") return <span style={{ width: s, height: s, borderRadius: 3, backgroundColor: "#FCE7F3", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: s * 0.55, fontWeight: 700, flexShrink: 0 }} title="图片">I</span>; if (type === "audio") return <span style={{ width: s, height: s, borderRadius: 3, backgroundColor: "#D1FAE5", color: "#047857", display: "flex", alignItems: "center", justifyContent: "center", fontSize: s * 0.55, fontWeight: 700, flexShrink: 0 }} title="音频">A</span>; return null; }
+function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button onClick={onClick} style={{ height: 30, paddingLeft: "var(--spacing-sm)", paddingRight: "var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: active ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: active ? "#E5E7EB" : "var(--color-surface-card)", border: "none", borderRadius: "var(--radius-pill)", cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" }}>{children}</button>; }
+function Toast({ msg }: { msg: string }) { return <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 100, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{msg}</div>; }
+function Skeleton() { return (<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))", gap: "var(--spacing-lg)" }}>{Array.from({ length: 6 }).map((_, i) => (<div key={i} style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-lg)" }}><div style={{ display: "flex", gap: "var(--spacing-sm)", marginBottom: "var(--spacing-md)" }}><div style={{ width: 34, height: 34, borderRadius: "var(--radius-md)", backgroundColor: "var(--color-surface-card)", animation: "pulse 1.5s infinite" }} /><div style={{ flex: 1 }}><div style={{ height: 14, width: "60%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, marginBottom: 6, animation: "pulse 1.5s infinite" }} /><div style={{ height: 10, width: "40%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, animation: "pulse 1.5s infinite" }} /></div></div><div style={{ height: 24, width: "35%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, marginBottom: "var(--spacing-md)", animation: "pulse 1.5s infinite" }} /><div style={{ height: 12, width: "100%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, marginBottom: 4, animation: "pulse 1.5s infinite" }} /><div style={{ height: 12, width: "70%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, marginBottom: "var(--spacing-md)", animation: "pulse 1.5s infinite" }} /><div style={{ height: 60, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-sm)", marginBottom: "var(--spacing-md)", animation: "pulse 1.5s infinite" }} /><div style={{ display: "flex", justifyContent: "space-between" }}><div style={{ height: 8, width: "30%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, animation: "pulse 1.5s infinite" }} /><div style={{ height: 8, width: "25%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, animation: "pulse 1.5s infinite" }} /><div style={{ height: 8, width: "20%", backgroundColor: "var(--color-surface-card)", borderRadius: 4, animation: "pulse 1.5s infinite" }} /></div></div>))}</div>); }
+function Empty({ onClear }: { onClear: () => void }) { return (<div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-xxl)", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", minHeight: 300 }}><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted-soft)" strokeWidth="1.2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /><line x1="8" y1="11" x2="14" y2="11" /></svg><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-muted)", marginTop: "var(--spacing-md)" }}>未找到符合条件的模型</span><button onClick={onClear} style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-brand-accent)", background: "none", border: "none", cursor: "pointer", marginTop: "var(--spacing-xs)" }}>清除全部筛选</button></div>); }
+function Sel({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: string[] }) { return <select value={value} onChange={(e) => onChange(e.target.value)} style={selS}>{options.map((o) => <option key={o}>{o}</option>)}</select>; }
+function ViewBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button onClick={onClick} style={{ height: 30, width: 30, display: "flex", alignItems: "center", justifyContent: "center", color: active ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: active ? "var(--color-canvas)" : "transparent", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", boxShadow: active ? "0 1px 3px rgba(0,0,0,0.1)" : "none" }}>{children}</button>; }
+function TxtBtn({ children, onClick, style }: { children: React.ReactNode; onClick?: () => void; style?: React.CSSProperties }) { return <button onClick={onClick} style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-muted)", background: "none", border: "none", cursor: "pointer", ...style }} onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-ink)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-muted)"; }}>{children}</button>; }
+function Th2({ children, right }: { children: React.ReactNode; right?: boolean }) { return <th style={{ padding: "var(--spacing-sm) var(--spacing-md)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-muted)", textAlign: right ? "right" : "left", whiteSpace: "nowrap" }}>{children}</th>; }
+function Td2({ children, style, right }: { children: React.ReactNode; style?: React.CSSProperties; right?: boolean }) { return <td style={{ padding: "var(--spacing-sm) var(--spacing-md)", fontSize: "var(--text-body-sm)", lineHeight: 1.4, borderBottom: "1px solid var(--color-hairline-soft)", verticalAlign: "middle", textAlign: right ? "right" : "left", ...style }}>{children}</td>; }
+function LBtn({ children, onClick }: { children: React.ReactNode; onClick?: (e?: any) => void }) { return <button onClick={onClick} style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", background: "none", border: "none", cursor: "pointer", padding: "2px 6px", borderRadius: "var(--radius-xs)" }}>{children}</button>; }
+function DSec({ t, children }: { t: string; children: React.ReactNode }) { return <div style={{ marginBottom: "var(--spacing-xl)" }}><h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-md)" }}>{t}</h3>{children}</div>; }
+function SpecRow({ label, value, valueColor }: { label: string; value: React.ReactNode; valueColor?: string }) { return (<div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", width: 72, flexShrink: 0 }}>{label}</span>{typeof value === "string" ? <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: valueColor || "var(--color-ink)" }}>{value}</span> : value}</div>); }
+
+const selS: React.CSSProperties = { height: 36, paddingLeft: "var(--spacing-sm)", paddingRight: 32, fontSize: "var(--text-body-sm)", fontWeight: 400, color: "var(--color-body)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" };

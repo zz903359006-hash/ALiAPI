@@ -11,6 +11,7 @@ export const routeTitleMap: Record<string, string> = {
   "/billing/records": "流水与发票",
   "/billing/budget": "预算与计费管理",
   "/observability": "请求与保险",
+  "/rankings": "模型排行榜",
   "/growth/invite": "邀请裂变中心",
   "/growth/team": "团队 & 员工管理",
   "/settings": "设置",

@@ -27,6 +27,7 @@ export const navGroups: NavItem[][] = [
   // Group 3: 监控与观测（观测层）
   [
     { key: "request-insurance", label: "请求与保险", path: "/observability" },
+    { key: "rankings", label: "模型排行榜", path: "/rankings" },
     { key: "usage-analytics", label: "用量分析", path: "/analytics/usage" },
     { key: "cost-analytics", label: "费用分析", path: "/analytics/cost" },
   ],

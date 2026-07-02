@@ -21,6 +21,14 @@ export default function SettingsPage() {
   const [address, setAddress] = useState("");
   const [toast, setToast] = useState("");
 
+  const [byokKeys, setByokKeys] = useState([
+    { provider: "OpenAI", label: "OpenAI", keyMasked: "sk-****...abcd", color: "#10A37F", status: "正常" },
+    { provider: "Anthropic", label: "Anthropic", keyMasked: "sk-ant-****...xyz", color: "#D4A574", status: "正常" },
+  ]);
+  const [showAddKey, setShowAddKey] = useState(false);
+  const [addProvider, setAddProvider] = useState("OpenAI");
+  const [addKey, setAddKey] = useState("");
+
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2500); };
 
   const toggleChannel = (ch: string) => {
@@ -168,6 +176,55 @@ export default function SettingsPage() {
           </div>
         </Card>
       </div>
+
+      {/* Card 5: 自有密钥 (BYOK) */}
+      <div style={{ marginTop: "var(--spacing-lg)" }}>
+        <Card title="自有密钥 (BYOK)">
+          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginBottom: "var(--spacing-lg)", lineHeight: 1.6 }}>
+            添加你的 OpenAI / Anthropic / Google / DeepSeek 等厂商的 API Key。调用时将优先使用你的账户密钥，系统会在密钥不可用时自动回退至平台余额。
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+            {byokKeys.map((k: any) => (
+              <div key={k.provider} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-md)", padding: "var(--spacing-sm) var(--spacing-md)", backgroundColor: "var(--color-surface-soft)", borderRadius: "var(--radius-md)" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: k.color, flexShrink: 0 }} />
+                <span style={{ width: 80, fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", flexShrink: 0 }}>{k.label}</span>
+                <code style={{ flex: 1, fontSize: "var(--text-caption)", color: "var(--color-muted)", fontFamily: "monospace" }}>{k.keyMasked}</code>
+                <span style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: k.status === "正常" ? "var(--color-success)" : k.status === "余额不足" ? "var(--color-warning)" : "var(--color-error)", whiteSpace: "nowrap" }}>{k.status}</span>
+                <button onClick={() => { setByokKeys((prev: any[]) => prev.filter((x: any) => x.provider !== k.provider)); showToast(k.label + " 密钥已移除"); }} style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-error)", background: "none", border: "none", cursor: "pointer", padding: "2px 6px", borderRadius: "var(--radius-xs)" }}>删除</button>
+              </div>
+            ))}
+            <button onClick={() => setShowAddKey(true)} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, height: 40, border: "1px dashed var(--color-hairline)", borderRadius: "var(--radius-md)", background: "none", cursor: "pointer", color: "var(--color-muted)", fontSize: "var(--text-body-sm)", fontWeight: 500 }}>+ 添加密钥</button>
+          </div>
+        </Card>
+      </div>
+
+      {/* Add Key Modal */}
+      {showAddKey && (
+        <div className="fixed inset-0 z-50" style={{ display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.3)" }}>
+          <div style={{ width: 400, backgroundColor: "var(--color-canvas)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-lg)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-md)" }}>
+              <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", margin: 0, fontFamily: "var(--font-display)" }}>添加自有密钥</h3>
+              <button onClick={() => setShowAddKey(false)} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", borderRadius: "var(--radius-full)" }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+              <Field label="提供商">
+                <select value={addProvider} onChange={(e) => setAddProvider(e.target.value)} style={selS}>
+                  {["OpenAI", "Anthropic", "Google", "DeepSeek", "阿里云"].map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </Field>
+              <Field label="API Key">
+                <input value={addKey} onChange={(e) => setAddKey(e.target.value)} placeholder="sk-..." style={inpS} />
+              </Field>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-sm)", marginTop: "var(--spacing-lg)" }}>
+              <button onClick={() => setShowAddKey(false)} style={{ height: 36, padding: "0 var(--spacing-md)", fontSize: "var(--text-button)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>取消</button>
+              <button onClick={() => { if (!addKey.trim()) return; setByokKeys((prev: any[]) => [...prev, { provider: addProvider, label: addProvider, keyMasked: addKey.slice(0, 5) + "****..." + addKey.slice(-4), color: "#6B7280", status: "正常" }]); setAddKey(""); setShowAddKey(false); showToast(addProvider + " 密钥已添加"); }} style={{ height: 36, padding: "0 var(--spacing-md)", fontSize: "var(--text-button)", fontWeight: 600, color: "#fff", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer" }}>确认添加</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

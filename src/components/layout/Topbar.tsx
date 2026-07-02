@@ -7,7 +7,7 @@ import NotificationDrawer from "./NotificationDrawer";
 import UpgradeOrgModal from "@/components/UpgradeOrgModal";
 import WorkspaceSwitcher from "./WorkspaceSwitcher";
 
-export default function Topbar() {
+export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
   const title = getRouteTitle(pathname);
@@ -67,6 +67,7 @@ export default function Topbar() {
         <div className="flex items-center" style={{ gap: "var(--spacing-sm)" }}>
           {/* Search placeholder */}
           <button
+            onClick={() => onOpenCommandPalette?.()}
             className="flex items-center rounded-md transition-colors"
             style={{
               height: 36,

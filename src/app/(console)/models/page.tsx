@@ -1,9 +1,16 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { getRouteTitle } from "@/config/titles";
 import Tabs from "@/components/layout/Tabs";
 import type { TabItem } from "@/components/layout/Tabs";
+import QuickKeyModal from "@/components/QuickKeyModal";
+
+const MOCK_KEYS = [
+  { id: "k1", name: "生产环境 Key", key: "sk-prod-a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6", masked: "sk-prod-****...z6" },
+  { id: "k2", name: "测试环境 Key", key: "sk-test-m9n8o7p6q5r4s3t2u1v0w9x8y7z6a5b4c3d2e1f0g1h2i3j4k5l6m7", masked: "sk-test-****...m7" },
+  { id: "k3", name: "开发调试", key: "sk-dev-q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0x1c2v3b4n5m6", masked: "sk-dev-****...m6" },
+];
 
 interface ModelItem {
   id: string; name: string; nameId: string; category: string; provider: string; providerColor: string;
@@ -357,6 +364,18 @@ function CompareDrawer({ models, onClose, onDetail }: { models: ModelItem[]; onC
 /* Sub components */
 function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogglePreferred, onToggleBlacklisted }: { data: ModelItem | null; onClose: () => void; preferredModels: Set<string>; blacklistedModels: Set<string>; onTogglePreferred: (id: string) => void; onToggleBlacklisted: (id: string) => void; }) {
   const [toast, setToast] = useState("");
+  const [selectedKeyId, setSelectedKeyId] = useState("");
+  const [quickKeyModalOpen, setQuickKeyModalOpen] = useState(false);
+  const [preferredSupplier, setPreferredSupplier] = useState<string | null>(null);
+  const [pgKeyId, setPgKeyId] = useState("");
+  const [pgPrompt, setPgPrompt] = useState("");
+  const [pgResponse, setPgResponse] = useState("");
+  const [pgStreaming, setPgStreaming] = useState(false);
+  const [pgTemperature, setPgTemperature] = useState(0.7);
+  const [pgMaxTokens, setPgMaxTokens] = useState(2048);
+  const [pgPopoverOpen, setPgPopoverOpen] = useState(false);
+  const [pgStats, setPgStats] = useState<{ latency: string; tokens: number; cost: string } | null>(null);
+  const injectedKey = MOCK_KEYS.find((k) => k.id === selectedKeyId)?.key || "";
   if (!data) return null;
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 2000); };
   return (
@@ -388,9 +407,20 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
             <div style={{ width: 72, height: 72, borderRadius: "50%", border: `3px solid ${data.hle >= 0.8 ? "var(--color-success)" : "var(--color-warning)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ fontSize: 20, fontWeight: 700, color: data.hle >= 0.8 ? "var(--color-success)" : "var(--color-warning)", fontFamily: "var(--font-display)" }}>{data.hle.toFixed(1)}</span></div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>{[["准确率", data.hleAccuracy * 100], ["稳定性", data.hleStability * 100], ["延迟", data.hleLatency * 100], ["幻觉率", data.hleHallucination]].map(([k, v]) => (<div key={k as string} style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", width: 48 }}>{k as string}</span><div style={{ flex: 1, height: 5, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}><div style={{ width: `${Math.min((v as number), 100)}%`, height: "100%", backgroundColor: (v as number) >= 80 ? "var(--color-success)" : (v as number) >= 50 ? "var(--color-warning)" : "var(--color-error)", borderRadius: "var(--radius-full)" }} /></div><span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-ink)", width: 36, textAlign: "right" }}>{k === "幻觉率" ? `${(v as number)}%` : `${(v as number).toFixed(0)}%`}</span></div>))}</div>
           </div></DSec>
+          <DSec t="供应商渠道路由"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>同一模型对接多家官方/授权上游，Auto 路由将按您的策略自动择优。</p><div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-xs)" }}><SupplierChannelRow supplier={{ name: "AliCloud 官方", type: "官方直连", latency: 240, availability: 99.92, inputPrice: 0.15, outputPrice: 0.60, status: "normal", preferred: preferredSupplier, onPrefer: (n) => { setPreferredSupplier(n); showToast("已将该渠道设为全局路由优选"); } }} /><SupplierChannelRow supplier={{ name: "Azure OpenAI", type: "授权中转", latency: 120, availability: 99.99, inputPrice: 0.22, outputPrice: 0.88, status: "normal", preferred: preferredSupplier, onPrefer: (n) => { setPreferredSupplier(n); showToast("已将该渠道设为全局路由优选"); } }} /><SupplierChannelRow supplier={{ name: "TSTCloud 授权", type: "授权中转", latency: 380, availability: 97.40, inputPrice: 0.08, outputPrice: 0.32, status: "busy", preferred: preferredSupplier, onPrefer: (n) => { setPreferredSupplier(n); showToast("已将该渠道设为全局路由优选"); } }} /></div></DSec>
           <DSec t="能力标签"><div style={{ display: "flex", gap: "var(--spacing-xs)" }}>{data.capabilities.map((c) => <span key={c} style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", backgroundColor: "var(--color-surface-card)", padding: "2px 10px", borderRadius: "var(--radius-pill)" }}>{c}</span>)}</div></DSec>
           <DSec t={`供应商（${data.suppliers.length} 个）`}>{data.suppliers.map((s, i) => (<div key={i} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", padding: "var(--spacing-sm) 0", borderBottom: i < data.suppliers.length - 1 ? "1px solid var(--color-hairline-soft)" : "none" }}><span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: s.color, flexShrink: 0 }} /><span style={{ flex: 1, fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{s.name}</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", width: 40, textAlign: "right" }}>{s.latency}</span><span style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: s.availability >= 99 ? "var(--color-success)" : s.availability >= 95 ? "var(--color-warning)" : "var(--color-error)", width: 48, textAlign: "right" }}>{s.availability.toFixed(1)}%</span></div>))}</DSec>
-          <DSec t="快速开始"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>复制以下代码，将 base_url 和 authorization 替换为你创建的 ALiAPI Key 即可发起调用。</p><QuickCode modelId={data.nameId} /></DSec>
+          <DSec t="快速调用"><div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+            <div style={{ display: "flex", gap: "var(--spacing-xs)", alignItems: "center" }}>
+              <select value={selectedKeyId} onChange={(e) => setSelectedKeyId(e.target.value)} style={{ flex: 1, height: 36, paddingLeft: "var(--spacing-sm)", paddingRight: 32, fontSize: "var(--text-body-sm)", fontWeight: 400, color: selectedKeyId ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}>
+                <option value="">选择已有 Key</option>
+                {MOCK_KEYS.map((k) => <option key={k.id} value={k.id}>{k.name} ({k.masked})</option>)}
+              </select>
+              <button onClick={() => setQuickKeyModalOpen(true)} style={{ height: 36, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>+ 新建</button>
+            </div>
+          </div></DSec>
+          <DSec t="快速开始"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>复制以下代码，将 base_url 和 authorization 替换为你创建的 ALiAPI Key 即可发起调用。</p><QuickCode modelId={data.nameId} apiKey={injectedKey} /></DSec>
+          <DSec t="在线调试 (Playground)"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>直接测试模型效果，响应流式输出。</p><Playground modelName={data.name} apiKeyId={pgKeyId} setApiKeyId={setPgKeyId} prompt={pgPrompt} setPrompt={setPgPrompt} response={pgResponse} setResponse={setPgResponse} streaming={pgStreaming} setStreaming={setPgStreaming} temperature={pgTemperature} setTemperature={setPgTemperature} maxTokens={pgMaxTokens} setMaxTokens={setPgMaxTokens} popoverOpen={pgPopoverOpen} setPopoverOpen={setPgPopoverOpen} stats={pgStats} setStats={setPgStats} showToast={showToast} /></DSec>
         </div>
         <div style={{ padding: "var(--spacing-md) var(--spacing-lg)", borderTop: "1px solid var(--color-hairline)", backgroundColor: "var(--color-canvas)" }}>
           <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
@@ -400,15 +430,29 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
           </div>
         </div>
       </div>
+
+      {quickKeyModalOpen && (
+        <QuickKeyModal
+          onClose={() => setQuickKeyModalOpen(false)}
+          onSuccess={(name, key) => {
+            const newKey = { id: `k${Date.now()}`, name, key, masked: `${key.slice(0, 8)}****...${key.slice(-2)}` };
+            MOCK_KEYS.push(newKey);
+            setSelectedKeyId(newKey.id);
+            setQuickKeyModalOpen(false);
+            showToast(`${name} 已创建`);
+          }}
+        />
+      )}
     </>
   );
 }
 
-function QuickCode({ modelId }: { modelId: string }) {
+function QuickCode({ modelId, apiKey }: { modelId: string; apiKey?: string }) {
+  const keyDisplay = apiKey || "sk-your-key-here";
   const [tab, setTab] = useState("curl");
-  const curl = `curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer sk-your-key-here" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
-  const python = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="sk-your-key-here"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
-  const node = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "sk-your-key-here",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
+  const curl = `curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${keyDisplay}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const python = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="${keyDisplay}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
+  const node = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "${keyDisplay}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
   const codeTabs: TabItem[] = [{ key: "curl", label: "cURL", content: <CodeSnippet code={curl} /> }, { key: "python", label: "Python", content: <CodeSnippet code={python} /> }, { key: "node", label: "Node.js", content: <CodeSnippet code={node} /> }];
   return <Tabs tabs={codeTabs} activeKey={tab} onChange={setTab} />;
 }
@@ -421,7 +465,162 @@ function CodeSnippet({ code }: { code: string }) {
   </div>);
 }
 
+function Playground({ modelName, apiKeyId, setApiKeyId, prompt, setPrompt, response, setResponse, streaming, setStreaming, temperature, setTemperature, maxTokens, setMaxTokens, popoverOpen, setPopoverOpen, stats, setStats, showToast }: { modelName: string; apiKeyId: string; setApiKeyId: (v: string) => void; prompt: string; setPrompt: (v: string) => void; response: string; setResponse: (v: string) => void; streaming: boolean; setStreaming: (v: boolean) => void; temperature: number; setTemperature: (v: number) => void; maxTokens: number; setMaxTokens: (v: number) => void; popoverOpen: boolean; setPopoverOpen: (v: boolean) => void; stats: { latency: string; tokens: number; cost: string } | null; setStats: (v: { latency: string; tokens: number; cost: string } | null) => void; showToast: (m: string) => void; }) {
+  const popoverRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const handler = (e: MouseEvent) => { if (popoverOpen && popoverRef.current && !popoverRef.current.contains(e.target as Node)) setPopoverOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [popoverOpen, setPopoverOpen]);
+
+  const stopRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const estimatedTokens = Math.max(20, Math.round(prompt.length / 2.5));
+
+  const startStream = () => {
+    if (!apiKeyId) { showToast("请先选择 API Key"); return; }
+    if (!prompt.trim()) { showToast("请输入 Prompt"); return; }
+    setStats(null);
+    setResponse("");
+    setStreaming(true);
+    stopRef.current = false;
+    const start = Date.now();
+    const seed = `${modelName} 收到你的消息了。这是一段模拟流式输出，演示 Console Playground 的实时响应效果。\n\n针对你的问题，模型会按 Token 粒度增量返回。在生产环境，这里会通过 SSE/WebSocket 推送真实的 chat.completion.chunk 事件。\n\n下面是一段示例回答：\n- 第一要点：先用一句话总结\n- 第二要点：再展开 2-3 条理由\n- 第三要点：给出可直接执行的建议\n\n（演示数据，实际响应来自 ${modelName}）`;
+    let i = 0;
+    intervalRef.current = setInterval(() => {
+      if (stopRef.current) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setStreaming(false);
+        return;
+      }
+      i += 6;
+      if (i >= seed.length) {
+        setResponse(seed);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setStreaming(false);
+        const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+        const tokens = Math.round(seed.length / 2);
+        const cost = (tokens * 0.000012).toFixed(4);
+        setStats({ latency: `${elapsed}s`, tokens, cost: `¥ ${cost}` });
+        return;
+      }
+      setResponse(seed.slice(0, i));
+    }, 35);
+  };
+
+  const stopStream = () => {
+    stopRef.current = true;
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setStreaming(false);
+  };
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current); }, []);
+
+  const canSend = !!apiKeyId && !streaming;
+
+  return (
+    <div style={{ border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-canvas)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", padding: "var(--spacing-sm) var(--spacing-md)", borderBottom: "1px solid var(--color-hairline-soft)" }}>
+        <select value={apiKeyId} onChange={(e) => setApiKeyId(e.target.value)} disabled={streaming} style={{ flex: 1, height: 32, paddingLeft: "var(--spacing-sm)", paddingRight: 28, fontSize: "var(--text-body-sm)", color: apiKeyId ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: streaming ? "not-allowed" : "pointer", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}>
+          <option value="">选择 API Key</option>
+          {MOCK_KEYS.map((k) => <option key={k.id} value={k.id}>{k.name} ({k.masked})</option>)}
+        </select>
+        <div ref={popoverRef} style={{ position: "relative" }}>
+          <button onClick={() => setPopoverOpen(!popoverOpen)} disabled={streaming} style={{ height: 32, padding: "0 var(--spacing-sm)", fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: streaming ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
+            参数
+          </button>
+          {popoverOpen && (
+            <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, zIndex: 10, width: 260, padding: "var(--spacing-md)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", boxShadow: "0 8px 24px rgba(0,0,0,0.10)" }}>
+              <div style={{ marginBottom: "var(--spacing-md)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>Temperature</span><span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-ink)" }}>{temperature.toFixed(1)}</span></div>
+                <input type="range" min="0" max="2" step="0.1" value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} style={{ width: "100%", accentColor: "var(--color-primary)" }} />
+              </div>
+              <div>
+                <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginBottom: 6 }}>Max Tokens</div>
+                <input type="number" min={1} max={32768} value={maxTokens} onChange={(e) => setMaxTokens(parseInt(e.target.value) || 1)} style={{ width: "100%", height: 32, padding: "0 var(--spacing-sm)", fontSize: "var(--text-body-sm)", color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", fontFamily: "var(--font-mono)" }} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ padding: "var(--spacing-md)", display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+        <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} disabled={streaming} placeholder="输入测试 Prompt..." style={{ width: "100%", minHeight: 90, padding: "var(--spacing-sm)", fontSize: "var(--text-body-sm)", color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", resize: "vertical", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-primary)"; }} onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-hairline)"; }} />
+        <div style={{ position: "relative", backgroundColor: "#1e1e1e", borderRadius: "var(--radius-sm)", minHeight: 140, border: "1px solid #1e1e1e" }}>
+          {response ? (
+            <pre style={{ margin: 0, padding: "var(--spacing-sm) var(--spacing-md)", fontSize: 12.5, lineHeight: 1.65, fontFamily: "var(--font-mono)", color: "#d4d4d4", whiteSpace: "pre-wrap", wordBreak: "break-word", minHeight: 124 }}>{response}{streaming && <span style={{ display: "inline-block", width: 7, height: 14, backgroundColor: "#10b981", marginLeft: 2, verticalAlign: "text-bottom", animation: "pulse 1s infinite" }} />}</pre>
+          ) : (
+            <div style={{ padding: "var(--spacing-md)", fontSize: 12, color: "#6B7280", fontFamily: "var(--font-mono)" }}>{streaming ? "正在连接模型..." : "响应将在这里流式输出"}</div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "var(--spacing-sm) var(--spacing-md)", borderTop: "1px solid var(--color-hairline-soft)", backgroundColor: "var(--color-surface-card)", borderBottomLeftRadius: "var(--radius-md)", borderBottomRightRadius: "var(--radius-md)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-md)", fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>
+          {stats ? (
+            <>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "var(--color-success)" }} />耗时 <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{stats.latency}</strong></span>
+              <span>消耗 <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{stats.tokens}</strong> Tokens</span>
+              <span>费用 <strong style={{ color: "var(--color-ink)", fontWeight: 600 }}>{stats.cost}</strong></span>
+            </>
+          ) : (
+            <span>预计消耗 ~{estimatedTokens} Tokens</span>
+          )}
+        </div>
+        <div style={{ position: "relative" }}>
+          {streaming ? (
+            <button onClick={stopStream} style={{ height: 32, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, backgroundColor: "var(--color-error)" }} />停止生成
+            </button>
+          ) : (
+            <button onClick={startStream} disabled={!canSend} title={!apiKeyId ? "请先选择 API Key" : ""} style={{ height: 32, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: canSend ? "var(--color-primary)" : "#9CA3AF", border: "none", borderRadius: "var(--radius-sm)", cursor: canSend ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              发送测试请求
+            </button>
+          )}
+        </div>
+      </div>
+      {!apiKeyId && <div style={{ padding: "var(--spacing-xs) var(--spacing-md)", fontSize: 11, color: "var(--color-warning)", borderTop: "1px solid var(--color-hairline-soft)" }}>提示：请先创建 Key 并确保账户有可用额度</div>}
+    </div>
+  );
+}
+
 function StatusDot({ s }: { s: string }) { const m: Record<string, { l: string; c: string }> = { normal: { l: "正常", c: "#10B981" }, busy: { l: "拥挤", c: "#D97706" }, maintenance: { l: "维护", c: "#EF4444" } }; const v = m[s] ?? m.normal; return <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 500, color: v.c, whiteSpace: "nowrap" }}><span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: v.c, flexShrink: 0 }} />{v.l}</span>; }
+function SupplierChannelRow({ supplier }: { supplier: { name: string; type: string; latency: number; availability: number; inputPrice: number; outputPrice: number; status: string; preferred: string | null; onPrefer: (name: string) => void } }) {
+  const latencyColor = supplier.latency <= 200 ? "var(--color-success)" : supplier.latency <= 350 ? "var(--color-warning)" : "var(--color-error)";
+  const latencyWidth = Math.max(15, 100 - supplier.latency / 5);
+  const statusMap: Record<string, { l: string; bg: string; c: string }> = { normal: { l: "正常", bg: "rgba(16,185,129,0.12)", c: "#10B981" }, busy: { l: "拥挤", bg: "rgba(217,119,6,0.12)", c: "#D97706" }, maintenance: { l: "维护", bg: "rgba(107,114,128,0.14)", c: "#6B7280" } };
+  const sv = statusMap[supplier.status] ?? statusMap.normal;
+  const isPreferred = supplier.preferred === supplier.name;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-md)", padding: "var(--spacing-sm) var(--spacing-md)", border: "1px solid var(--color-hairline-soft)", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-canvas)" }}>
+      <div style={{ flex: "0 0 130px", display: "flex", flexDirection: "column", gap: 2 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{supplier.name}</span>
+          {isPreferred && <span style={{ fontSize: 10, fontWeight: 600, color: "#EA580C", backgroundColor: "rgba(234,88,12,0.10)", padding: "1px 6px", borderRadius: "var(--radius-pill)" }}>⭐ 优选</span>}
+        </div>
+        <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{supplier.type}</span>
+      </div>
+      <div style={{ flex: "0 0 110px", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: "var(--text-caption)", color: "var(--color-body)", whiteSpace: "nowrap" }}>延迟 {supplier.latency}ms</span>
+        <div style={{ flex: 1, height: 4, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}><div style={{ width: `${latencyWidth}%`, height: "100%", backgroundColor: latencyColor, borderRadius: "var(--radius-full)" }} /></div>
+      </div>
+      <div style={{ flex: "0 0 70px", textAlign: "right" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: supplier.availability >= 99.9 ? "var(--color-success)" : supplier.availability >= 98 ? "var(--color-warning)" : "var(--color-error)" }}>{supplier.availability.toFixed(2)}%</span>
+        <div style={{ fontSize: 11, color: "var(--color-muted)" }}>可用率</div>
+      </div>
+      <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-sm)", fontSize: "var(--text-caption)" }}>
+        <div><span style={{ color: "var(--color-muted)" }}>输入 </span><span style={{ color: "var(--color-ink)", fontWeight: 600 }}>${supplier.inputPrice.toFixed(2)}</span><span style={{ color: "var(--color-muted)" }}> / 1M</span></div>
+        <div><span style={{ color: "var(--color-muted)" }}>输出 </span><span style={{ color: "var(--color-ink)", fontWeight: 600 }}>${supplier.outputPrice.toFixed(2)}</span><span style={{ color: "var(--color-muted)" }}> / 1M</span></div>
+      </div>
+      <div style={{ flex: "0 0 56px", display: "flex", justifyContent: "center" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: sv.c, backgroundColor: sv.bg, padding: "3px 10px", borderRadius: "var(--radius-pill)" }}><span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: sv.c }} />{sv.l}</span>
+      </div>
+      <button onClick={() => supplier.onPrefer(supplier.name)} style={{ flex: "0 0 auto", height: 28, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: isPreferred ? "var(--color-on-primary)" : "var(--color-ink)", backgroundColor: isPreferred ? "var(--color-primary)" : "transparent", border: isPreferred ? "none" : "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap" }}>{isPreferred ? "✓ 已优选" : "设为优选"}</button>
+    </div>
+  );
+}
 function ModeIcon({ type, size = 14 }: { type: string; size?: number }) { const s = size; if (type === "text") return <span style={{ width: s, height: s, borderRadius: 3, backgroundColor: "#E0E7FF", color: "#4338CA", display: "flex", alignItems: "center", justifyContent: "center", fontSize: s * 0.55, fontWeight: 700, flexShrink: 0 }} title="文本">T</span>; if (type === "image") return <span style={{ width: s, height: s, borderRadius: 3, backgroundColor: "#FCE7F3", color: "#BE185D", display: "flex", alignItems: "center", justifyContent: "center", fontSize: s * 0.55, fontWeight: 700, flexShrink: 0 }} title="图片">I</span>; if (type === "audio") return <span style={{ width: s, height: s, borderRadius: 3, backgroundColor: "#D1FAE5", color: "#047857", display: "flex", alignItems: "center", justifyContent: "center", fontSize: s * 0.55, fontWeight: 700, flexShrink: 0 }} title="音频">A</span>; return null; }
 function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) { return <button onClick={onClick} style={{ height: 30, paddingLeft: "var(--spacing-sm)", paddingRight: "var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: active ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: active ? "#E5E7EB" : "var(--color-surface-card)", border: "none", borderRadius: "var(--radius-pill)", cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap" }}>{children}</button>; }
 function Toast({ msg }: { msg: string }) { return <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 100, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{msg}</div>; }

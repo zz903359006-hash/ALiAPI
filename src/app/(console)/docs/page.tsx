@@ -30,11 +30,11 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          欢迎使用 ALiAPI 网关平台。本指南将帮助您在 5 分钟内完成首次 API 调用。
+          欢迎使用 AliAPI 网关平台。本指南将帮助您在 5 分钟内完成首次 API 调用。
         </p>
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-sm)", fontFamily: "var(--font-display)" }}>前置条件</h3>
         <ul style={{ marginBottom: "var(--spacing-lg)", paddingLeft: 20, fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 2 }}>
-          <li>已注册 ALiAPI 账户</li>
+          <li>已注册 AliAPI 账户</li>
           <li>账户余额大于 0</li>
           <li>已创建有效的调用 Key</li>
         </ul>
@@ -47,12 +47,12 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          ALiAPI 使用 API Key 进行身份鉴权。所有请求必须在 HTTP Header 中携带有效的 API Key。
+          AliAPI 使用 API Key 进行身份鉴权。所有请求必须在 HTTP Header 中携带有效的 API Key。
         </p>
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-sm)", fontFamily: "var(--font-display)" }}>请求头格式</h3>
         <CodeBlock code={`Authorization: Bearer sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`} />
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", margin: "var(--spacing-lg) 0 var(--spacing-sm)", fontFamily: "var(--font-display)" }}>Python 示例</h3>
-        <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    api_key="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",\n    base_url="https://api.aliapi.dev/v1"\n)\n\nresponse = client.chat.completions.create(\n    model="deepseek-v3",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`} />
+        <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    api_key="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",\n    base_url="https://api.AliAPI.dev/v1"\n)\n\nresponse = client.chat.completions.create(\n    model="deepseek-v3",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`} />
       </div>
     ),
   },
@@ -62,7 +62,7 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          ALiAPI 提供完全兼容 OpenAI SDK 的接口，您只需修改 base_url 即可无缝切换。
+          AliAPI 提供完全兼容 OpenAI SDK 的接口，您只需修改 base_url 即可无缝切换。
         </p>
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-sm)", fontFamily: "var(--font-display)" }}>支持的端点</h3>
         <DocTable
@@ -102,7 +102,7 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          ALiAPI 平台聚合了多种主流大语言模型，以下是当前支持的模型列表。
+          AliAPI 平台聚合了多种主流大语言模型，以下是当前支持的模型列表。
         </p>
         <DocTable
           headers={["模型名称", "提供商", "输入价格", "输出价格", "上下文"]}
@@ -122,7 +122,7 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          调用 ALiAPI 接口时可能返回以下错误码，请根据对应说明进行排查。
+          调用 AliAPI 接口时可能返回以下错误码，请根据对应说明进行排查。
         </p>
         <DocTable
           headers={["错误码", "HTTP 状态", "说明", "处理建议"]}

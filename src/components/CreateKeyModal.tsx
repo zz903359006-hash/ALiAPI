@@ -26,9 +26,9 @@ export default function CreateKeyModal({ open, onClose, onSuccess }: { open: boo
 
   const modelId = "gpt-4o-mini";
 
-  const curl = `curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${generatedKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
-  const python = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="${generatedKey}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
-  const node = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "${generatedKey}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
+  const curl = `curl https://api.AliAPI.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${generatedKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const python = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.AliAPI.dev/v1",\n    api_key="${generatedKey}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
+  const node = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.AliAPI.dev/v1",\n  apiKey: "${generatedKey}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
 
   const codeTabs: TabItem[] = [
     { key: "curl", label: "cURL", content: <CodeBox code={curl} /> },

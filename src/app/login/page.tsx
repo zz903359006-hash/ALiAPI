@@ -60,7 +60,7 @@ export default function LoginPage() {
               A
             </div>
             <span style={{ fontSize: 28, fontWeight: 600, color: "var(--color-on-dark)", fontFamily: "var(--font-display)", letterSpacing: "-0.5px" }}>
-              ALiAPI
+              AliAPI
             </span>
           </div>
           <p style={{ fontSize: "var(--text-title-md)", color: "var(--color-on-dark)", lineHeight: 1.6, fontWeight: 400, opacity: 0.85 }}>
@@ -173,7 +173,7 @@ function QrCodeTab() {
 
       <button
         style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}
-        onClick={() => window.location.href = "https://docs.aliapi.dev"}
+        onClick={() => window.location.href = "https://docs.AliAPI.dev"}
       >
         App 端扫码遇到问题？
       </button>

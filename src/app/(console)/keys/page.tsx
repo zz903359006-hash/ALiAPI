@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { getRouteTitle } from "@/config/titles";
 import Tabs from "@/components/layout/Tabs";
+import { isEmployee } from "@/lib/role";
 
 /* ================================================================
    Mock data — 9-column structure per interaction spec §3.2.2
@@ -106,6 +107,39 @@ export default function KeysPage() {
   const [activeTab, setActiveTab] = useState("list");
   const [detailKey, setDetailKey] = useState<CallKey | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimDone, setClaimDone] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 3000); };
+
+  const handleClaim = () => {
+    setClaimLoading(true);
+    setTimeout(() => {
+      const newKey: CallKey = {
+        id: "sk-default-" + Date.now().toString(36),
+        name: "Default-Assigned-Key-01",
+        mask: "sk-****" + Date.now().toString(36).slice(-4),
+        fullKey: "sk-default-" + Array.from({ length: 40 }, () => Math.random().toString(36)[2]).join(""),
+        note: "员工领取默认 Key",
+        team: "当前团队",
+        member: "我",
+        routing: "性价比优先",
+        rateLimit: "QPS 30 · 日调用 100k",
+        status: "normal",
+        lastUsed: "-",
+        usage: "0 Tokens",
+        cost: "¥ 0.00",
+        qualityScore: 85,
+        errorRate: "0%",
+        costTrend: "-",
+      };
+      MOCK_KEYS.unshift(newKey);
+      setClaimLoading(false);
+      setClaimDone(true);
+      showToast("领取成功！请在下方列表查看并复制使用。");
+    }, 1000);
+  };
 
   const tabItems = [
     { key: "list", label: "调用 Key 列表", content: null },
@@ -114,6 +148,8 @@ export default function KeysPage() {
 
   return (
     <div>
+      {toast && <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 999, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{toast}</div>}
+
       {/* ================================================================
           Page Header
           ================================================================ */}
@@ -154,8 +190,8 @@ export default function KeysPage() {
           ================================================================ */}
       {activeTab === "list" && (
         <>
-          {/* Batch action bar */}
-          {selectedIds.size > 0 && (
+          {/* Batch action bar — hidden for employees */}
+          {!isEmployee && selectedIds.size > 0 && (
             <div
               style={{
                 display: "flex",
@@ -193,6 +229,34 @@ export default function KeysPage() {
             </div>
           )}
 
+          {/* Employee: Claim card */}
+          {isEmployee && !claimDone && (
+            <div style={{ marginBottom: "var(--spacing-lg)", backgroundColor: "var(--color-surface-soft)", border: "2px dashed var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-md) var(--spacing-lg)", display: "flex", alignItems: "center", gap: "var(--spacing-lg)" }}>
+              <div style={{ width: 44, height: 44, borderRadius: "var(--radius-md)", backgroundColor: "var(--color-canvas)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink)" strokeWidth="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", fontFamily: "var(--font-display)" }}>领取 API 凭证</div>
+                <div style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginTop: 2 }}>系统将自动分配一个 API Key 供您日常调用使用，免去填写复杂配置。</div>
+              </div>
+              <button onClick={handleClaim} disabled={claimLoading} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: claimLoading ? "#9CA3AF" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: claimLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+                {claimLoading ? "分配中..." : "立即领取"}
+              </button>
+            </div>
+          )}
+
+          {/* Employee: Claim success */}
+          {isEmployee && claimDone && (
+            <div style={{ marginBottom: "var(--spacing-lg)", padding: "var(--spacing-sm) var(--spacing-md)", backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
+              <span style={{ fontSize: 14, flexShrink: 0 }}>🎉</span>
+              <span style={{ flex: 1, fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>领取成功！请复制下方列表中的 Key 开始使用。</span>
+              <button onClick={() => setClaimDone(false)} style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg>
+              </button>
+            </div>
+          )}
+
           {/* Toolbar */}
           <div
             style={{
@@ -209,19 +273,18 @@ export default function KeysPage() {
               <SearchInput />
               {/* Status filter */}
               <SelectFilter options={["全部状态", "正常", "暂停", "冻结"]} />
-              {/* Team filter */}
-              <SelectFilter options={["全部团队", "AI 平台部", "客服中心", "产品研发", "增长与投放", "数据平台"]} />
-              {/* Routing strategy filter */}
-              <SelectFilter options={["全部策略", "性价比优先", "最低成本", "Auto 路由中心"]} />
+              {!isEmployee && <SelectFilter options={["全部团队", "AI 平台部", "客服中心", "产品研发", "增长与投放", "数据平台"]} />}
+              {!isEmployee && <SelectFilter options={["全部策略", "性价比优先", "最低成本", "Auto 路由中心"]} />}
             </div>
 
-            <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>
+            {!isEmployee && <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>}
           </div>
 
           {/* Table */}
           <CallKeyTable
             data={MOCK_KEYS}
             selectedIds={selectedIds}
+            isEmployee={isEmployee}
             onSelect={(id, checked) => {
               setSelectedIds((prev) => {
                 const next = new Set(prev);
@@ -256,6 +319,7 @@ export default function KeysPage() {
       <KeyDetailDrawer
         keyData={detailKey}
         onClose={() => setDetailKey(null)}
+        isEmployee={isEmployee}
       />
     </div>
   );
@@ -267,12 +331,14 @@ export default function KeysPage() {
 function CallKeyTable({
   data,
   selectedIds,
+  isEmployee,
   onSelect,
   onSelectAll,
   onViewDetail,
 }: {
   data: CallKey[];
   selectedIds: Set<string>;
+  isEmployee?: boolean;
   onSelect: (id: string, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
   onViewDetail: (key: CallKey) => void;
@@ -285,104 +351,107 @@ function CallKeyTable({
   const someSelected = data.some((k) => selectedIds.has(k.id));
 
   return (
-    <div
-      style={{
-        backgroundColor: "var(--color-canvas)",
-        border: "1px solid var(--color-hairline)",
-        borderRadius: "var(--radius-lg)",
-        overflow: "hidden",
-        overflowX: "auto",
-      }}
-    >
-      <table style={{ width: "100%", minWidth: 1300, borderCollapse: "collapse" }}>
+    <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", overflow: "hidden", overflowX: "auto" }}>
+      <table style={{ width: "100%", minWidth: isEmployee ? 650 : 1300, borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ backgroundColor: "#F9FAFB" }}>
-            <Th style={{ width: 40, textAlign: "center" }}>
-              <input
-                type="checkbox"
-                checked={allSelected}
-                ref={(el) => {
-                  if (el) el.indeterminate = !allSelected && someSelected;
-                }}
-                onChange={(e) => onSelectAll(e.target.checked)}
-                style={{ cursor: "pointer" }}
-              />
-            </Th>
-            <Th>Key 名称 / ID</Th>
-            <Th>团队 · 员工</Th>
-            <Th>绑定路由策略</Th>
-            <Th>限速概要</Th>
-            <Th>状态</Th>
-            <Th>质量</Th>
-            <Th>错误率</Th>
-            <Th>最近使用</Th>
-            <Th>当期用量 / 费用</Th>
-            <Th style={{ textAlign: "right" }}>操作</Th>
+            {isEmployee ? (
+              <>
+                <Th>Key 名称</Th>
+                <Th>Key ID</Th>
+                <Th>状态</Th>
+                <Th>用量/限额</Th>
+                <Th style={{ textAlign: "right" }}>操作</Th>
+              </>
+            ) : (
+              <>
+                <Th style={{ width: 40, textAlign: "center" }}>
+                  <input type="checkbox" checked={allSelected} ref={(el) => { if (el) el.indeterminate = !allSelected && someSelected; }} onChange={(e) => onSelectAll(e.target.checked)} style={{ cursor: "pointer" }} />
+                </Th>
+                <Th>Key 名称 / ID</Th>
+                <Th>团队 · 员工</Th>
+                <Th>绑定路由策略</Th>
+                <Th>限速概要</Th>
+                <Th>状态</Th>
+                <Th>质量</Th>
+                <Th>错误率</Th>
+                <Th>最近使用</Th>
+                <Th>当期用量 / 费用</Th>
+                <Th style={{ textAlign: "right" }}>操作</Th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
           {data.map((row) => (
             <tr key={row.id} style={{ height: 44 }}>
-              <Td style={{ textAlign: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={selectedIds.has(row.id)}
-                  onChange={(e) => onSelect(row.id, e.target.checked)}
-                  style={{ cursor: "pointer" }}
-                />
-              </Td>
-              <Td>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>
-                    {row.name}
-                  </span>
-                  <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>
-                    ID: {row.mask}
-                  </span>
-                </div>
-              </Td>
-              <Td style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>
-                {row.team} · {row.member}
-              </Td>
-              <Td>
-                <span className="truncate" style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", maxWidth: 110, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={row.routing}>
-                  {row.routing}
-                </span>
-              </Td>
-              <Td style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", maxWidth: 200, lineHeight: 1.5 }}>
-                {row.rateLimit}
-              </Td>
-              <Td>
-                <StatusBadge status={row.status} />
-              </Td>
-              <Td>
-                <QualityBadge score={row.qualityScore} />
-              </Td>
-              <Td>
-                <ErrorBadge rate={row.errorRate} />
-              </Td>
-              <Td style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", whiteSpace: "nowrap" }}>
-                {row.lastUsed}
-              </Td>
-              <Td>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: "var(--text-caption)", color: "var(--color-body)" }}>{row.usage}</span>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
-                    <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{row.cost}</span>
-                    {row.costTrend && row.costTrend !== "-" && (
-                      <span style={{ fontSize: 11, color: row.costTrend.startsWith("+") ? "var(--color-error)" : "var(--color-success)", fontWeight: 500 }}>{row.costTrend}</span>
-                    )}
-                  </div>
-                </div>
-              </Td>
-              <Td style={{ textAlign: "right" }}>
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}>
-                  <ActionLink onClick={() => onViewDetail(row)}>查看详情</ActionLink>
-                  <ActionLink>编辑</ActionLink>
-                  <ActionLink>{row.status === "normal" ? "暂停" : "启用"}</ActionLink>
-                  <ActionLink dim>重置密钥</ActionLink>
-                </div>
-              </Td>
+              {isEmployee ? (
+                <>
+                  <Td>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{row.name}</span>
+                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>{row.note}</span>
+                    </div>
+                  </Td>
+                  <Td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
+                      <span style={{ fontSize: "var(--text-caption)", fontFamily: "var(--font-mono)", color: "var(--color-body)" }}>{row.mask}</span>
+                      <CopyButton />
+                    </div>
+                  </Td>
+                  <Td><StatusBadge status={row.status} /></Td>
+                  <Td style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-body)" }}>{row.usage}</span>
+                      <div style={{ width: 120, height: 4, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}>
+                        <div style={{ width: `${Math.min(100, parseFloat(row.usage) / 1000)}%`, height: "100%", backgroundColor: "var(--color-success)", borderRadius: "var(--radius-full)" }} />
+                      </div>
+                    </div>
+                  </Td>
+                  <Td style={{ textAlign: "right" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}>
+                      <ActionLink onClick={() => onViewDetail(row)}>查看详情</ActionLink>
+                      <ActionLink dim>复制</ActionLink>
+                    </div>
+                  </Td>
+                </>
+              ) : (
+                <>
+                  <Td style={{ textAlign: "center" }}>
+                    <input type="checkbox" checked={selectedIds.has(row.id)} onChange={(e) => onSelect(row.id, e.target.checked)} style={{ cursor: "pointer" }} />
+                  </Td>
+                  <Td>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{row.name}</span>
+                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>ID: {row.mask}</span>
+                    </div>
+                  </Td>
+                  <Td style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>{row.team} · {row.member}</Td>
+                  <Td><span className="truncate" style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", maxWidth: 110, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={row.routing}>{row.routing}</span></Td>
+                  <Td style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", maxWidth: 200, lineHeight: 1.5 }}>{row.rateLimit}</Td>
+                  <Td><StatusBadge status={row.status} /></Td>
+                  <Td><QualityBadge score={row.qualityScore} /></Td>
+                  <Td><ErrorBadge rate={row.errorRate} /></Td>
+                  <Td style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", whiteSpace: "nowrap" }}>{row.lastUsed}</Td>
+                  <Td>
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-body)" }}>{row.usage}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
+                        <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{row.cost}</span>
+                        {row.costTrend && row.costTrend !== "-" && <span style={{ fontSize: 11, color: row.costTrend.startsWith("+") ? "var(--color-error)" : "var(--color-success)", fontWeight: 500 }}>{row.costTrend}</span>}
+                      </div>
+                    </div>
+                  </Td>
+                  <Td style={{ textAlign: "right" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}>
+                      <ActionLink onClick={() => onViewDetail(row)}>查看详情</ActionLink>
+                      <ActionLink>编辑</ActionLink>
+                      <ActionLink>{row.status === "normal" ? "暂停" : "启用"}</ActionLink>
+                      <ActionLink dim>更换</ActionLink>
+                    </div>
+                  </Td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
@@ -394,7 +463,7 @@ function CallKeyTable({
 /* ================================================================
    Key Detail Drawer — 5 sections per spec §3.2.3
    ================================================================ */
-function KeyDetailDrawer({ keyData, onClose }: { keyData: CallKey | null; onClose: () => void }) {
+function KeyDetailDrawer({ keyData, onClose, isEmployee }: { keyData: CallKey | null; onClose: () => void; isEmployee?: boolean }) {
   const [showFullKey, setShowFullKey] = useState(false);
   const [keyCopied, setKeyCopied] = useState(false);
   if (!keyData) return null;
@@ -447,12 +516,17 @@ function KeyDetailDrawer({ keyData, onClose }: { keyData: CallKey | null; onClos
           <DrawerSection title="基本信息">
             <DrawerField label="Key 名称" value={keyData.name} />
             <DrawerField label="Key ID" value={keyData.mask} mono copyable />
-            <div style={{ marginBottom: "var(--spacing-sm)" }}>
+            <div style={{ marginBottom: "var(--spacing-sm)", display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
               <button
                 onClick={() => setShowFullKey(!showFullKey)}
-                style={{ height: 30, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-brand-accent)", backgroundColor: "transparent", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer" }}
+                style={{ height: 30, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4 }}
               >
-                {showFullKey ? "隐藏完整 Key" : "显示完整 Key"}
+                {showFullKey ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                )}
+                {showFullKey ? "隐藏" : "查看"}
               </button>
             </div>
             {showFullKey && (
@@ -469,13 +543,14 @@ function KeyDetailDrawer({ keyData, onClose }: { keyData: CallKey | null; onClos
             <div style={{ marginTop: "var(--spacing-sm)", display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
               <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>状态</span>
               <StatusBadge status={keyData.status} />
-              <button style={{ ...secondaryBtnStyle, marginLeft: "auto" }}>
+              {!isEmployee && <button style={{ ...secondaryBtnStyle, marginLeft: "auto" }}>
                 {keyData.status === "normal" ? "暂停" : "启用"}
-              </button>
+              </button>}
             </div>
           </DrawerSection>
 
-          {/* §5.2 Routing strategy */}
+          {/* §5.2 Routing strategy — hidden for employees */}
+          {!isEmployee && (
           <DrawerSection title="路由策略">
             <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: 4 }}>
               {keyData.routing}
@@ -485,8 +560,10 @@ function KeyDetailDrawer({ keyData, onClose }: { keyData: CallKey | null; onClos
             </div>
             <button style={secondaryBtnStyle}>更换策略</button>
           </DrawerSection>
+          )}
 
-          {/* §5.3 Rate limit */}
+          {/* §5.3 Rate limit — hidden for employees */}
+          {!isEmployee && (
           <DrawerSection title="限速与风控">
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
               <FormRow label="QPS 上限" placeholder="30" />
@@ -506,6 +583,7 @@ function KeyDetailDrawer({ keyData, onClose }: { keyData: CallKey | null; onClos
               <button style={{ ...primaryBtnStyle, alignSelf: "flex-start" }}>保存限速设置</button>
             </div>
           </DrawerSection>
+          )}
 
           {/* §5.4 Statistics */}
           <DrawerSection title="统计概览">
@@ -532,16 +610,18 @@ function KeyDetailDrawer({ keyData, onClose }: { keyData: CallKey | null; onClos
             </div>
           </DrawerSection>
 
-          {/* §5.5 Security actions */}
+          {/* §5.5 Security actions — hidden for employees */}
+          {!isEmployee && (
           <DrawerSection title="安全操作">
             <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
-              <button style={secondaryBtnStyle}>重置 Key</button>
+              <button style={secondaryBtnStyle}>更换</button>
               <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: 0 }}>
                 生成新 Key，旧 Key 在 24 小时后失效。
               </p>
               <button style={dangerBtnStyle}>立即失效旧 Key</button>
             </div>
           </DrawerSection>
+          )}
 
         </div>
       </div>
@@ -718,7 +798,7 @@ function EmptyState() {
         暂未创建调用 Key
       </span>
       <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginBottom: "var(--spacing-lg)" }}>
-        创建第一个调用 Key，开始通过 ALiAPI 接入模型调用。
+        创建第一个调用 Key，开始通过 AliAPI 接入模型调用。
       </span>
       <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>
     </div>

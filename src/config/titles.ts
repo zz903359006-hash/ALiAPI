@@ -11,14 +11,16 @@ export const routeTitleMap: Record<string, string> = {
   "/billing/records": "流水与发票",
   "/billing/budget": "预算与计费管理",
   "/observability": "请求与保险",
+  "/playground": "在线测试",
   "/rankings": "模型排行榜",
   "/growth/invite": "邀请裂变中心",
   "/growth/team": "团队 & 员工管理",
   "/settings": "设置",
   "/settings/security": "安全与审计中心",
-  "/notifications": "通知中心",
-};
+   "/notifications": "通知中心",
+   "/enterprise": "企业AI一站式服务",
+ };
 
 export function getRouteTitle(pathname: string): string {
-  return routeTitleMap[pathname] ?? "ALiAPI 控制台";
+  return routeTitleMap[pathname] ?? "AliAPI 控制台";
 }

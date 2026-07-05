@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ALiAPI — 网关平台控制台",
-  description: "ALiAPI 网关平台用户端控制台",
+  title: "AliAPI — 网关平台控制台",
+  description: "AliAPI 网关平台用户端控制台",
 };
 
 export default function RootLayout({

@@ -108,15 +108,15 @@ export default function CreateKeyPage() {
   const codeTabs: TabItem[] = [
     {
       key: "python", label: "Python",
-      content: <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="${generatedKey}"\n)\n\nresponse = client.chat.completions.create(\n    model="gpt-4o",\n    messages=[{"role": "user", "content": "Hello world"}]\n)\nprint(response.choices[0].message.content)`} />,
+      content: <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.AliAPI.dev/v1",\n    api_key="${generatedKey}"\n)\n\nresponse = client.chat.completions.create(\n    model="gpt-4o",\n    messages=[{"role": "user", "content": "Hello world"}]\n)\nprint(response.choices[0].message.content)`} />,
     },
     {
       key: "curl", label: "cURL",
-      content: <CodeBlock code={`curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${generatedKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "gpt-4o",\n    "messages": [{"role": "user", "content": "Hello world"}]\n  }'`} />,
+      content: <CodeBlock code={`curl https://api.AliAPI.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${generatedKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "gpt-4o",\n    "messages": [{"role": "user", "content": "Hello world"}]\n  }'`} />,
     },
     {
       key: "node", label: "Node.js",
-      content: <CodeBlock code={`import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "${generatedKey}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "gpt-4o",\n  messages: [{ role: "user", content: "Hello world" }],\n});\n\nconsole.log(response.choices[0].message.content);`} />,
+      content: <CodeBlock code={`import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.AliAPI.dev/v1",\n  apiKey: "${generatedKey}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "gpt-4o",\n  messages: [{ role: "user", content: "Hello world" }],\n});\n\nconsole.log(response.choices[0].message.content);`} />,
     },
   ];
 

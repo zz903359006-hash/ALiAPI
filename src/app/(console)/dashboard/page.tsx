@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getRouteTitle } from "@/config/titles";
+import { useRouter } from "next/navigation";
 import UpgradeOrgModal from "@/components/UpgradeOrgModal";
 import CreateKeyModal from "@/components/CreateKeyModal";
+import { isEmployee } from "@/lib/role";
 
 type AccountMode = "personal" | "org-admin" | "employee";
 
@@ -29,6 +31,14 @@ const TEAM_TOP5 = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isEmployee) {
+      router.replace("/keys");
+    }
+  }, [router]);
+
   const [accountMode, setAccountMode] = useState<AccountMode>("personal");
   const [timeRange, setTimeRange] = useState<TimeRange>("近 7 天");
   const [hasKeys, setHasKeys] = useState(false);
@@ -81,12 +91,27 @@ export default function DashboardPage() {
 
       {/* ====== ONBOARDING: No keys yet ====== */}
       {!hasKeys ? (
+        isEmployee ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 220px)" }}>
+            <div style={{ width: 420, maxWidth: "100%", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-xl)", textAlign: "center" }}>
+              <div style={{ width: 48, height: 48, borderRadius: "var(--radius-md)", backgroundColor: "var(--color-surface-card)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto var(--spacing-lg)" }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink)" strokeWidth="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+              </div>
+              <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--color-ink)", margin: "0 0 var(--spacing-sm)", fontFamily: "var(--font-display)" }}>欢迎使用 AliAPI 中转站</h1>
+              <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: "0 0 var(--spacing-xl)", lineHeight: 1.7 }}>您尚未领取 API Key，领取后即可开始调用大模型。</p>
+              <button onClick={() => window.location.href = "/keys"} style={{ height: 44, padding: "0 var(--spacing-xl)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+                前往领取 API Key
+              </button>
+            </div>
+          </div>
+        ) : (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 220px)" }}>
           <div style={{ width: 480, maxWidth: "100%", textAlign: "center" }}>
             <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto var(--spacing-lg)" }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--color-ink)", margin: "0 0 var(--spacing-sm)", fontFamily: "var(--font-display)" }}>Welcome to ALiAPI Workspace</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "var(--color-ink)", margin: "0 0 var(--spacing-sm)", fontFamily: "var(--font-display)" }}>Welcome to AliAPI Workspace</h1>
             <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: "0 0 var(--spacing-xl)", lineHeight: 1.7, maxWidth: 400, marginLeft: "auto", marginRight: "auto" }}>
               在这里管理您的 API Keys、路由策略和账单。要开始通过统一网关调用大模型，请先创建您的第一个 API Key。
             </p>
@@ -96,10 +121,20 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
+        )
       ) : (
         <>
-          {/* ====== Guidance banner (shown after first key creation) ====== */}
-          {showGuidance && (
+          {showGuidance && (accountMode === "employee" ? (
+            <div style={{ marginBottom: "var(--spacing-lg)", padding: "var(--spacing-md) var(--spacing-lg)", backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-md)" }}>
+              <span style={{ fontSize: 18, flexShrink: 0 }}>🎉</span>
+              <span style={{ flex: 1, fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.6 }}>
+                准备好进行调用了吗？前往 <ALink href="/keys">API Key 管理</ALink> 创建 Key 开始测试。
+              </span>
+              <button onClick={() => setShowGuidance(false)} style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", flexShrink: 0 }}>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg>
+              </button>
+            </div>
+          ) : (
             <div style={{ marginBottom: "var(--spacing-lg)", padding: "var(--spacing-md) var(--spacing-lg)", backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-md)" }}>
               <span style={{ fontSize: 18, flexShrink: 0 }}>🎉</span>
               <span style={{ flex: 1, fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.6 }}>
@@ -109,7 +144,7 @@ export default function DashboardPage() {
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg>
               </button>
             </div>
-          )}
+          ))}
 
           {/* Section 1 — Header */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "var(--spacing-xl)", gap: "var(--spacing-lg)", flexWrap: "wrap" }}>
@@ -133,7 +168,7 @@ export default function DashboardPage() {
               {[
                 { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>, label: "前往充值", desc: "为账户充值，解锁全站模型调用", href: "/billing/credits" },
                 { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>, label: "继续创建 Key", desc: "创建新的调用 Key，支持路由与风控", href: "/keys/create" },
-                { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>, label: "快速开始文档", desc: "查看接入指南与示例代码", href: "https://docs.aliapi.dev" },
+                { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>, label: "快速开始文档", desc: "查看接入指南与示例代码", href: "https://docs.AliAPI.dev" },
               ].map((item, i) => (
                 <div key={i} onClick={() => window.open(item.href, item.href.startsWith("http") ? "_blank" : "_self")} style={{ backgroundColor: "var(--color-surface-soft)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: "var(--spacing-md)", transition: "box-shadow 0.15s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; }}
@@ -179,7 +214,8 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Section 4 — Trend + Risk */}
+          {/* Section 4 — Trend + Risk (hidden for employees) */}
+          {accountMode !== "employee" && (
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "var(--spacing-lg)", alignItems: "start" }}>
             <Card title="用量与费用趋势">
               <div>
@@ -198,16 +234,12 @@ export default function DashboardPage() {
             </Card>
             <Card title="风险与提醒">
               <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
-                {accountMode === "employee" ? (
-                  <RiskCard icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>} title="额度不足预警" desc="您当前可用额度较低（¥ 200.00），请联系管理员申请增加额度。" btnText="联系管理员" onClick={() => window.location.href = "/growth/team"} />
-                ) : (
-                  <RiskCard icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>} title="余额即将耗尽" desc="2 个 Key 接近额度上限 · 主账户余额将在 3 天内不足" btnText="去充值" onClick={() => window.location.href = "/billing"} />
-                )}
+                <RiskCard icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>} title="余额即将耗尽" desc="2 个 Key 接近额度上限 · 主账户余额将在 3 天内不足" btnText="去充值" onClick={() => window.location.href = "/billing"} />
                 <RiskCard icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>} title="高频错误模型 Top 3" desc={<div style={{ marginTop: 4, display: "flex", flexDirection: "column", gap: 2 }}>{[{ n: "DeepSeek V3", v: "4.78%", c: "var(--color-error)" }, { n: "通义千问 Max", v: "2.31%", c: "var(--color-warning)" }, { n: "GPT-4o (代码)", v: "1.02%", c: "var(--color-muted)" }].map((m) => (<div key={m.n} style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--text-caption)" }}><span style={{ color: "var(--color-body)" }}>{m.n}</span><span style={{ color: m.c, fontWeight: 600 }}>{m.v}</span></div>))}</div>} btnText="查看日志" onClick={() => window.location.href = "/observability?tab=logs&status=error"} />
-                {accountMode !== "employee" && <RiskCard icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>} title="触发保险最高模型" desc="通义千问 Max — 12 次，¥ 48.00" btnText="查看补偿" onClick={() => window.location.href = "/insurance"} />}
               </div>
             </Card>
           </div>
+          )}
 
           {/* Section 5 — Team usage top 5 */}
           {accountMode === "org-admin" && (

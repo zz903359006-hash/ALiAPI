@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useCallback } from "react";
 import NotificationDrawer from "./NotificationDrawer";
 import UpgradeOrgModal from "@/components/UpgradeOrgModal";
+import { isEmployee } from "@/lib/role";
 
 const GLOBAL_NAVS = [
   { label: "首页", path: "/dashboard" },
@@ -47,7 +48,8 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
           gap: "var(--spacing-lg)",
         }}
       >
-        {/* Left: Global nav links */}
+        {/* Left: Global nav links — hidden for employees (sidebar is the nav) */}
+        {!isEmployee && (
         <nav className="flex items-center" style={{ gap: 4 }}>
           {GLOBAL_NAVS.map((nav) => {
             const active = pathname === nav.path;
@@ -55,19 +57,7 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
               <button
                 key={nav.path}
                 onClick={() => router.push(nav.path)}
-                style={{
-                  height: 36,
-                  paddingLeft: 14,
-                  paddingRight: 14,
-                  fontSize: 14,
-                  fontWeight: active ? 600 : 500,
-                  color: active ? "var(--color-ink)" : "var(--color-muted)",
-                  backgroundColor: active ? "var(--color-surface-card)" : "transparent",
-                  border: "none",
-                  borderRadius: "var(--radius-md)",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                }}
+                style={{ height: 36, paddingLeft: 14, paddingRight: 14, fontSize: 14, fontWeight: active ? 600 : 500, color: active ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: active ? "var(--color-surface-card)" : "transparent", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}
                 onMouseEnter={(e) => { if (active) return; e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; e.currentTarget.style.color = "var(--color-ink)"; }}
                 onMouseLeave={(e) => { if (active) return; e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--color-muted)"; }}
               >
@@ -76,13 +66,15 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
             );
           })}
         </nav>
+        )}
 
         {/* Spacer */}
         <div className="flex-1" />
 
         {/* Right: Actions */}
         <div className="flex items-center" style={{ gap: "var(--spacing-sm)" }}>
-          {/* Search */}
+          {/* Search — hidden for employees */}
+          {!isEmployee && (
           <button
             onClick={() => onOpenCommandPalette?.()}
             className="flex items-center rounded-md transition-colors"
@@ -93,6 +85,18 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
             <SearchIcon />
             <span className="hidden lg:inline">搜索</span>
             <span style={{ fontSize: 11, fontWeight: 500, color: "var(--color-muted-soft)", backgroundColor: "var(--color-surface-card)", padding: "1px 5px", borderRadius: "var(--radius-xs)", lineHeight: "16px", marginLeft: 2 }}>⌘K</span>
+          </button>
+          )}
+
+          {/* 企业AI一站式服务 */}
+          <button
+            className="flex items-center rounded-md transition-colors"
+            style={{ height: 36, paddingLeft: "var(--spacing-sm)", paddingRight: "var(--spacing-sm)", fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", borderRadius: "var(--radius-md)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            onClick={() => router.push("/enterprise")}
+          >
+            企业AI一站式服务
           </button>
 
           {/* Notifications */}
@@ -123,14 +127,18 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
             {userMenuOpen && (
               <div className="absolute right-0 top-full mt-xxs w-48 py-xxs z-50" style={{ backgroundColor: "var(--color-canvas)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-hairline)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
                 <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>个人资料</UserMenuItem>
-                <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>设置 & 偏好</UserMenuItem>
-                {isOrgMode ? (
+                {isEmployee ? null : (
                   <>
-                    <UserMenuItem onClick={() => { router.push("/settings/security"); setUserMenuOpen(false); }}>安全与审计中心</UserMenuItem>
-                    <UserMenuItem onClick={() => { router.push("/growth/team"); setUserMenuOpen(false); }}>团队 & 员工管理</UserMenuItem>
+                    <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>设置 & 偏好</UserMenuItem>
+                    {isOrgMode ? (
+                      <>
+                        <UserMenuItem onClick={() => { router.push("/settings/security"); setUserMenuOpen(false); }}>安全与审计中心</UserMenuItem>
+                        <UserMenuItem onClick={() => { router.push("/growth/team"); setUserMenuOpen(false); }}>团队 & 员工管理</UserMenuItem>
+                      </>
+                    ) : (
+                      <UserMenuItem onClick={() => { setUpgradeOpen(true); setUserMenuOpen(false); }}>升级为组织</UserMenuItem>
+                    )}
                   </>
-                ) : (
-                  <UserMenuItem onClick={() => { setUpgradeOpen(true); setUserMenuOpen(false); }}>升级为组织</UserMenuItem>
                 )}
                 <div style={{ height: 1, backgroundColor: "var(--color-hairline-soft)", margin: "4px 0" }} />
                 <UserMenuItem muted onClick={() => setUserMenuOpen(false)}>退出登录</UserMenuItem>

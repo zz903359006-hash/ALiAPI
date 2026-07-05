@@ -92,8 +92,8 @@ export default function InvitePage() {
           <div>
             <div style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-muted)", marginBottom: 4 }}>邀请链接</div>
             <div style={{ display: "flex" }}>
-              <div style={{ flex: 1, height: 40, display: "flex", alignItems: "center", paddingLeft: "var(--spacing-sm)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRight: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", fontSize: "var(--text-caption)", color: "var(--color-body)", overflow: "hidden", whiteSpace: "nowrap" }}>https://aliapi.com/invite?code=ABCD1234</div>
-              <button onClick={() => copy("https://aliapi.com/invite?code=ABCD1234", "邀请链接")} style={{ height: 40, padding: "0 var(--spacing-md)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "0 var(--radius-md) var(--radius-md) 0", cursor: "pointer" }}>复制</button>
+              <div style={{ flex: 1, height: 40, display: "flex", alignItems: "center", paddingLeft: "var(--spacing-sm)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRight: "none", borderRadius: "var(--radius-md) 0 0 var(--radius-md)", fontSize: "var(--text-caption)", color: "var(--color-body)", overflow: "hidden", whiteSpace: "nowrap" }}>https://AliAPI.com/invite?code=ABCD1234</div>
+              <button onClick={() => copy("https://AliAPI.com/invite?code=ABCD1234", "邀请链接")} style={{ height: 40, padding: "0 var(--spacing-md)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "0 var(--radius-md) var(--radius-md) 0", cursor: "pointer" }}>复制</button>
             </div>
           </div>
         </div>

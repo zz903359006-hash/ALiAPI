@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getRouteTitle } from "@/config/titles";
 import Tabs from "@/components/layout/Tabs";
+import { isEmployee } from "@/lib/role";
 
 /* ================================================================
    Mock data
@@ -136,7 +137,7 @@ export default function ObservabilityPage() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-sm)", marginBottom: "var(--spacing-md)", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", flexWrap: "wrap" }}>
               <Sel options={["最近 1 小时", "最近 24 小时", "最近 7 日", "自定义"]} />
-              <Sel options={["全部团队", "AI 平台部", "客服中心", "增长与投放", "数据平台"]} />
+              {!isEmployee && <Sel options={["全部团队", "AI 平台部", "客服中心", "增长与投放", "数据平台"]} />}
               <Sel options={["全部 Key", "生产环境主 Key", "客服机器人 Key", "投放分析 Key"]} />
               <Sel options={["全部模型", "GPT-4o", "Claude 3.5", "通义千问 Max", "DeepSeek V3"]} />
             </div>
@@ -161,7 +162,7 @@ export default function ObservabilityPage() {
       {tab === "hle" && <HleTab />}
 
       {/* Detail Drawer */}
-      <LogDrawer data={detail} onClose={() => setDetail(null)} onSwitchTab={setTab} />
+      <LogDrawer data={detail} onClose={() => setDetail(null)} onSwitchTab={setTab} isEmployee={isEmployee} />
     </div>
   );
 }
@@ -206,7 +207,7 @@ function LogTable({ data, onView }: { data: LogRow[]; onView: (r: LogRow) => voi
 /* ================================================================
    Log Detail Drawer
    ================================================================ */
-function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClose: () => void; onSwitchTab: (tab: string) => void }) {
+function LogDrawer({ data, onClose, onSwitchTab, isEmployee }: { data: LogRow | null; onClose: () => void; onSwitchTab: (tab: string) => void; isEmployee?: boolean }) {
   const [toast, setToast] = useState("");
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
   const [appealOpen, setAppealOpen] = useState(false);
@@ -280,15 +281,25 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
               <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>输入 Token</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.inputTokens.toLocaleString()}</span></div>
               <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>输出 Token</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.outputTokens.toLocaleString()}</span></div>
               <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>总 Token</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.costTokens}</span></div>
+              {isEmployee ? (
+                <div style={{ gridColumn: "1 / -1", padding: "var(--spacing-sm)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-md)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-ink)" }}>本次消耗额度</span>
+                    <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 700, color: "var(--color-ink)" }}>{data.costTokens} Tokens ({data.costRmb})</span>
+                  </div>
+                </div>
+              ) : (
               <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 4, padding: "var(--spacing-sm)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-md)" }}>
                 <FeeRow label="原生 Token 成本" desc="模型官方计费" raw={data.costRmb} />
                 <FeeRow label="平台服务费" desc="按 5% 计算" raw={data.costRmb} isFee />
                 <FeeRow label="实际扣费总额" desc="" raw={data.costRmb} total />
               </div>
+              )}
             </div>
           </Sec>
 
           {/* Routing summary */}
+          {!isEmployee && (
           <Sec title="路由决策摘要">
             <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", margin: "0 0 var(--spacing-sm)", lineHeight: 1.6 }}>
               本次请求由策略 <strong>{data.routingStrategy}</strong> 调度，选择了供应商 <strong>{data.routedVendor}</strong>（{data.routedModel}）。
@@ -301,6 +312,7 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
               </div>
             )}
           </Sec>
+          )}
 
           {/* Prompt / Response */}
           <Sec title="请求内容（已脱敏）">
@@ -350,6 +362,7 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
         </div>
 
         {/* ====== Bottom sticky action area ====== */}
+        {!isEmployee && (
         <div style={{ padding: "var(--spacing-md) var(--spacing-lg)", borderTop: "1px solid var(--color-hairline)", backgroundColor: "var(--color-canvas)" }}>
           {(costHigh || abnormal || hleLow || data.compensation) && (
             <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-sm)" }}>觉得这次调用不够理想？</p>
@@ -385,6 +398,7 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
             </div>
           )}
         </div>
+        )}
       </div>
     </>
   );

@@ -7,7 +7,7 @@ export const routeTitleMap: Record<string, string> = {
   "/keys/create": "创建调用 Key",
   "/keys/management": "管理 Key 管理",
   "/routing/auto": "Auto 路由中心",
-  "/billing": "计费中心",
+  "/billing": "余额管理",
   "/billing/records": "流水与发票",
   "/billing/budget": "预算与计费管理",
   "/observability": "请求与保险",

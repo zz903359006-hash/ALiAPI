@@ -19,7 +19,7 @@ export const navGroups: NavItem[][] = [
     { key: "analytics-usage", label: "用量分析", path: "/analytics/usage" },
     { key: "playground", label: "在线测试", path: "/playground" },
     { key: "models", label: "模型广场", path: "/models" },
-    { key: "billing-center", label: "充值缴费余额管理", path: "/billing" },
+    { key: "billing-center", label: "余额管理", path: "/billing" },
   ],
 ];
 

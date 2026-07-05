@@ -137,6 +137,13 @@ export default function BillingRecordsPage() {
 /* ================================================================
    Transaction Table
    ================================================================ */
+function breakDownTitle(amount: string) {
+  const val = parseFloat(amount.replace(/[¥,+\-]/g, "")) || 0;
+  const native = val / 1.05;
+  const fee = val - native;
+  return `原生成本 ¥ ${native.toFixed(4)} | 平台费 ¥ ${fee.toFixed(4)} | 总价 ¥ ${val.toFixed(4)}`;
+}
+
 function TxTable({ data, onView }: { data: TxRow[]; onView: (r: TxRow) => void }) {
   if (data.length === 0) return <EmptyState />;
 
@@ -155,7 +162,7 @@ function TxTable({ data, onView }: { data: TxRow[]; onView: (r: TxRow) => void }
               <Td><TxTypeBadge type={r.type} /></Td>
               <Td><AssetBadge type={r.assetType} /></Td>
               <Td>
-                <div style={{ display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", flexDirection: "column", position: "relative", cursor: r.type === "调用扣费" ? "help" : "default" }} title={r.type === "调用扣费" ? breakDownTitle(r.amount) : undefined}>
                   <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: r.amount.startsWith("-") ? "var(--color-ink)" : "var(--color-success)" }}>{r.amount}</span>
                   <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>{r.tokens}</span>
                 </div>
@@ -208,6 +215,7 @@ function TxDrawer({ data, onClose }: { data: TxRow | null; onClose: () => void }
           <Sect title="金额与资产变动">
             <Fld label="变动 Tokens" value={data.tokens} />
             <Fld label="变动金额" value={data.amount} />
+            {data.type === "调用扣费" && <FeeBreakdown amount={data.amount} />}
             <Fld label="变动前余额" value={data.balanceBefore} />
             <Fld label="变动后余额" value={data.balanceAfter} muted />
           </Sect>
@@ -579,6 +587,34 @@ function Fld({ label, value, children, mono, muted }: { label: string; value?: s
 
 function ButXn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return <button onClick={onClick} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--radius-full)", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer" }}>{children}</button>;
+}
+
+function FeeBreakdown({ amount }: { amount: string }) {
+  const val = parseFloat(amount.replace(/[¥,+\-]/g, "")) || 0;
+  const native = val / 1.05;
+  const fee = val - native;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 2, margin: "4px 0 8px", padding: "var(--spacing-sm)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-sm)" }}>
+      <FeeRow label="模型原价" value={native} desc="模型官方计费" />
+      <FeeRow label="平台服务费" value={fee} desc="按 5% 计算" warn />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 2, borderTop: "1px solid var(--color-hairline-soft)" }}>
+        <span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-ink)" }}>实际扣费总额</span>
+        <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 700, color: "var(--color-ink)" }}>¥ {val.toFixed(4)}</span>
+      </div>
+    </div>
+  );
+}
+
+function FeeRow({ label, value, desc, warn }: { label: string; value: number; desc: string; warn?: boolean }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <span style={{ fontSize: "var(--text-caption)", color: "var(--color-ink)" }}>{label}</span>
+        <span style={{ fontSize: 11, color: "var(--color-muted)" }}>({desc})</span>
+      </div>
+      <span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: warn ? "var(--color-warning)" : "var(--color-ink)" }}>¥ {value.toFixed(4)}</span>
+    </div>
+  );
 }
 
 const primaryBtn: React.CSSProperties = { height: 40, paddingLeft: "var(--spacing-lg)", paddingRight: "var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, lineHeight: "var(--text-button--line-height)", color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" };

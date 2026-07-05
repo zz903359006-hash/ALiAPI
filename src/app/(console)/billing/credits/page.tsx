@@ -15,7 +15,7 @@ export default function CreditsPage() {
       </div>
 
       <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-xxl)", textAlign: "center" }}>
-        <div style={{ fontSize: 48, marginBottom: "var(--spacing-md)" }}>💳</div>
+        <div style={{ marginBottom: "var(--spacing-md)" }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" strokeWidth="1.5"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /><line x1="5" y1="15" x2="9" y2="15" /></svg></div>
         <h2 style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 var(--spacing-xs)", fontFamily: "var(--font-display)" }}>充值功能即将上线</h2>
         <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: "0 0 var(--spacing-lg)", maxWidth: 400, marginLeft: "auto", marginRight: "auto" }}>
           我们正在对接支付渠道，充值功能开发中。您可先前往计费中心查看资产详情。

@@ -91,7 +91,7 @@ export default function BillingPage() {
 
       {/* ====== Section 2: Expiry alert ====== */}
       <div style={{ marginTop: "var(--spacing-lg)", padding: "var(--spacing-md)", backgroundColor: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-md)" }}>
-        <span style={{ fontSize: 20, flexShrink: 0 }}>⏰</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" strokeWidth="2" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
         <span style={{ flex: 1, fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>
           有 <strong style={{ color: "var(--color-warning)" }}>¥ 320.00</strong> 的奖励额度将在 <strong>3 天</strong> 后过期（2026-07-15），请留意。
         </span>
@@ -133,7 +133,33 @@ export default function BillingPage() {
         </Card>
       </div>
 
-      {/* ====== Section 4: Monthly consumption table ====== */}
+      {/* ====== Section 4: Fee rule explanation ====== */}
+      <div style={{ marginTop: "var(--spacing-lg)" }}>
+        <Card title="计费规则说明">
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--spacing-sm)", padding: "var(--spacing-sm)", backgroundColor: "var(--color-surface-soft)", borderRadius: "var(--radius-md)" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+            <div>
+              <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>平台服务费</span>
+              <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", margin: "var(--spacing-xs) 0 0", lineHeight: 1.6 }}>
+                在全量模型的原生成本基础上统一加收 <strong style={{ color: "var(--color-warning)" }}>5%</strong> 作为网关调度与保险兜底费。<strong style={{ color: "var(--color-ink)" }}>BYOK（自带密钥）</strong>调用免收平台费。
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "var(--spacing-sm)", padding: "var(--spacing-sm)", backgroundColor: "var(--color-surface-soft)", borderRadius: "var(--radius-md)" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            <div>
+              <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>扣费规则</span>
+              <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", margin: "var(--spacing-xs) 0 0", lineHeight: 1.6 }}>
+                扣费时优先消耗即将过期的额度；同一到期日内，按临时额度 → 补偿 → 奖励 → 本金的顺序扣费。
+              </p>
+            </div>
+          </div>
+        </div>
+        </Card>
+      </div>
+
+      {/* ====== Section 5: Monthly consumption table ====== */}
       <div style={{ marginTop: "var(--spacing-xl)" }}>
         <Card title="本月资产对账明细">
           <div style={{ overflow: "auto" }}>

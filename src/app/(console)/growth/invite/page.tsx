@@ -57,7 +57,7 @@ export default function InvitePage() {
           <div style={{ width: 480, maxHeight: "80vh", overflow: "auto", backgroundColor: "var(--color-canvas)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-lg)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--spacing-md)" }}>
               <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>邀请规则</h3>
-              <button onClick={() => setRulesOpen(false)} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", fontSize: 18 }}>✕</button>
+               <button onClick={() => setRulesOpen(false)} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer" }}><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg></button>
             </div>
             <pre style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.7, fontFamily: "inherit", whiteSpace: "pre-wrap", margin: 0 }}>{RULES_TEXT}</pre>
           </div>

@@ -139,7 +139,7 @@ export default function ModelsPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           <Sel value={sort} onChange={setSort} options={SORTS} />
           <div style={{ position: "relative" }}>
-            <span style={{ fontSize: 14, color: "var(--color-muted-soft)", cursor: "pointer" }} onMouseEnter={() => setSortInfo(true)} onMouseLeave={() => setSortInfo(false)}>ⓘ</span>
+            <span style={{ cursor: "pointer", display: "inline-flex", verticalAlign: "middle" }} onMouseEnter={() => setSortInfo(true)} onMouseLeave={() => setSortInfo(false)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted-soft)" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg></span>
             {sortInfo && (
               <div style={{ position: "absolute", top: 24, left: "50%", transform: "translateX(-50%)", zIndex: 20, width: 220, padding: "var(--spacing-sm)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)", fontSize: "var(--text-caption)", color: "var(--color-body)", lineHeight: 1.5, pointerEvents: "none" }}>
                 综合推荐会优先参考价格、HLE 质量评分、可用率与调用热度。
@@ -165,7 +165,7 @@ export default function ModelsPage() {
           {filterTags.map((tag, i) => (
             <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, height: 26, paddingLeft: 8, paddingRight: 6, fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-muted)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-pill)" }}>
               {tag.label}
-              <button onClick={tag.onRemove} style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", padding: 0, fontSize: 12, lineHeight: 1 }}>✕</button>
+              <button onClick={tag.onRemove} style={{ width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", padding: 0 }}><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg></button>
             </span>
           ))}
           {filterTags.length > 1 && <TxtBtn onClick={clearFilters} style={{ fontSize: "var(--text-caption)", marginLeft: 4 }}>清除全部</TxtBtn>}
@@ -202,7 +202,7 @@ export default function ModelsPage() {
               <button key={m.id} onClick={() => setCompareList((prev) => prev.filter((x) => x.id !== m.id))} style={{ display: "flex", alignItems: "center", gap: 4, height: 32, padding: "0 8px", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-surface-soft)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer" }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: m.providerColor, flexShrink: 0 }} />
                 {m.name}
-                <span style={{ marginLeft: 2, fontSize: 11, color: "var(--color-muted)" }}>✕</span>
+                <span style={{ marginLeft: 2, display: "inline-flex", verticalAlign: "middle" }}><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="var(--color-muted)" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg></span>
               </button>
             ))}
           </div>
@@ -275,7 +275,7 @@ function ModelCard({ data: m, onDetail, onCopy, isComparing, onToggleCompare }: 
       <div className="opacity-0 group-hover/card:opacity-100 transition-opacity duration-150" style={{ position: "absolute", top: 10, right: 10, display: "flex", gap: 6, zIndex: 1 }}>
         <button onClick={(e) => { e.stopPropagation(); onDetail(m); }} style={{ height: 28, padding: "0 10px", fontSize: 12, fontWeight: 500, color: "var(--color-ink)", backgroundColor: "rgba(255,255,255,0.95)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>查看详情</button>
         <button onClick={(e) => { e.stopPropagation(); window.location.href = `/keys/create?model=${m.nameId}`; }} style={{ height: 28, padding: "0 10px", fontSize: 12, fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap", boxShadow: "0 1px 3px rgba(0,0,0,0.12)" }}>创建 Key</button>
-        <button onClick={(e) => { e.stopPropagation(); onToggleCompare?.(); }} style={{ height: 28, width: 28, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500, color: isComparing ? "var(--color-on-primary)" : "var(--color-ink)", backgroundColor: isComparing ? "var(--color-primary)" : "rgba(255,255,255,0.95)", border: `1px solid ${isComparing ? "transparent" : "var(--color-hairline)"}`, borderRadius: "var(--radius-sm)", cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }} title={isComparing ? "移出对比" : "加入对比"}>{isComparing ? "✓" : "+"}</button>
+        <button onClick={(e) => { e.stopPropagation(); onToggleCompare?.(); }} style={{ height: 28, width: 28, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 500, color: isComparing ? "var(--color-on-primary)" : "var(--color-ink)", backgroundColor: isComparing ? "var(--color-primary)" : "rgba(255,255,255,0.95)", border: `1px solid ${isComparing ? "transparent" : "var(--color-hairline)"}`, borderRadius: "var(--radius-sm)", cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }} title={isComparing ? "移出对比" : "加入对比"}>{isComparing ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>}</button>
       </div>
     </div>
   );
@@ -425,8 +425,8 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
         <div style={{ padding: "var(--spacing-md) var(--spacing-lg)", borderTop: "1px solid var(--color-hairline)", backgroundColor: "var(--color-canvas)" }}>
           <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
             <button onClick={() => { onClose(); window.location.href = `/keys/create?model=${data.nameId}`; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>使用此模型创建 Key</button>
-            <button onClick={() => { onTogglePreferred(data.id); showToast(preferredModels.has(data.id) ? "已从路由优选名单移除" : "已加入全局路由优选名单"); }} style={{ height: 40, padding: "0 var(--spacing-sm)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>{preferredModels.has(data.id) ? "★ 已优选" : "☆ 设为优选"}</button>
-            <button onClick={() => { onToggleBlacklisted(data.id); showToast(blacklistedModels.has(data.id) ? "已从路由黑名单移除" : "已加入全局路由黑名单"); }} style={{ height: 40, padding: "0 var(--spacing-sm)", fontSize: "var(--text-button)", fontWeight: 600, color: blacklistedModels.has(data.id) ? "var(--color-error)" : "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>{blacklistedModels.has(data.id) ? "🚫 已黑名单" : "加入黑名单"}</button>
+            <button onClick={() => { onTogglePreferred(data.id); showToast(preferredModels.has(data.id) ? "已从路由优选名单移除" : "已加入全局路由优选名单"); }} style={{ height: 40, padding: "0 var(--spacing-sm)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}>{preferredModels.has(data.id) ? <><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> 已优选</> : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> 设为优选</>}</button>
+            <button onClick={() => { onToggleBlacklisted(data.id); showToast(blacklistedModels.has(data.id) ? "已从路由黑名单移除" : "已加入全局路由黑名单"); }} style={{ height: 40, padding: "0 var(--spacing-sm)", fontSize: "var(--text-button)", fontWeight: 600, color: blacklistedModels.has(data.id) ? "var(--color-error)" : "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 4 }}>{blacklistedModels.has(data.id) ? <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" /></svg> 已黑名单</> : "加入黑名单"}</button>
           </div>
         </div>
       </div>
@@ -449,12 +449,47 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
 
 function QuickCode({ modelId, apiKey }: { modelId: string; apiKey?: string }) {
   const keyDisplay = apiKey || "sk-your-key-here";
-  const [tab, setTab] = useState("curl");
-  const curl = `curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${keyDisplay}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
-  const python = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="${keyDisplay}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
-  const node = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "${keyDisplay}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
-  const codeTabs: TabItem[] = [{ key: "curl", label: "cURL", content: <CodeSnippet code={curl} /> }, { key: "python", label: "Python", content: <CodeSnippet code={python} /> }, { key: "node", label: "Node.js", content: <CodeSnippet code={node} /> }];
-  return <Tabs tabs={codeTabs} activeKey={tab} onChange={setTab} />;
+  const isClaude = modelId.toLowerCase().includes("claude");
+  const [protocol, setProtocol] = useState("openai");
+  const [langTab, setLangTab] = useState("curl");
+
+  const openaiCurl = `curl https://api.aliapi.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${keyDisplay}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const openaiPython = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.aliapi.dev/v1",\n    api_key="${keyDisplay}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
+  const openaiNode = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.aliapi.dev/v1",\n  apiKey: "${keyDisplay}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
+
+  const anthropicCurl = `curl https://api.aliapi.dev/anthropic/v1/messages \\\n  -H "x-api-key: ${keyDisplay}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "max_tokens": 1024,\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const anthropicPython = `import anthropic\n\nclient = anthropic.Anthropic(\n    api_key="${keyDisplay}",\n    base_url="https://api.aliapi.dev/anthropic"\n)\n\nresponse = client.messages.create(\n    model="${modelId}",\n    max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.content[0].text)`;
+  const anthropicNode = `import Anthropic from "@anthropic-ai/sdk";\n\nconst client = new Anthropic({\n  apiKey: "${keyDisplay}",\n  baseURL: "https://api.aliapi.dev/anthropic",\n});\n\nconst response = await client.messages.create({\n  model: "${modelId}",\n  max_tokens: 1024,\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.content[0].text);`;
+
+  const isAnthropic = protocol === "anthropic";
+  const code = isAnthropic ? anthropicCurl : openaiCurl;
+  const codePython = isAnthropic ? anthropicPython : openaiPython;
+  const codeNode = isAnthropic ? anthropicNode : openaiNode;
+
+  const langTabs: TabItem[] = [
+    { key: "curl", label: "cURL", content: <CodeSnippet code={code} /> },
+    { key: "python", label: "Python", content: <CodeSnippet code={codePython} /> },
+    { key: "node", label: "Node.js", content: <CodeSnippet code={codeNode} /> },
+  ];
+
+  if (!isClaude) {
+    return <Tabs tabs={langTabs} activeKey={langTab} onChange={setLangTab} />;
+  }
+
+  const protocolTabs: TabItem[] = [
+    { key: "openai", label: "OpenAI 兼容格式", content: <div><Tabs tabs={langTabs} activeKey={langTab} onChange={setLangTab} /></div> },
+    {
+      key: "anthropic", label: "Anthropic 原生格式",
+      content: (
+        <div>
+          <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>如果您使用 Cursor 或 Claude 客户端，可在设置中将 Base URL 指向 <code style={{ color: "var(--color-ink)", fontFamily: "var(--font-mono)", fontSize: 11, backgroundColor: "var(--color-surface-card)", padding: "1px 4px", borderRadius: "var(--radius-sm)" }}>https://api.aliapi.dev/anthropic</code>。</p>
+          <Tabs tabs={langTabs} activeKey={langTab} onChange={setLangTab} />
+        </div>
+      ),
+    },
+  ];
+
+  return <Tabs tabs={protocolTabs} activeKey={protocol} onChange={setProtocol} />;
 }
 
 function CodeSnippet({ code }: { code: string }) {
@@ -598,7 +633,7 @@ function SupplierChannelRow({ supplier }: { supplier: { name: string; type: stri
       <div style={{ flex: "0 0 130px", display: "flex", flexDirection: "column", gap: 2 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{supplier.name}</span>
-          {isPreferred && <span style={{ fontSize: 10, fontWeight: 600, color: "#EA580C", backgroundColor: "rgba(234,88,12,0.10)", padding: "1px 6px", borderRadius: "var(--radius-pill)" }}>⭐ 优选</span>}
+          {isPreferred && <span style={{ fontSize: 10, fontWeight: 600, color: "#EA580C", backgroundColor: "rgba(234,88,12,0.10)", padding: "1px 6px", borderRadius: "var(--radius-pill)", display: "inline-flex", alignItems: "center", gap: 2 }}><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> 优选</span>}
         </div>
         <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{supplier.type}</span>
       </div>
@@ -617,7 +652,7 @@ function SupplierChannelRow({ supplier }: { supplier: { name: string; type: stri
       <div style={{ flex: "0 0 56px", display: "flex", justifyContent: "center" }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600, color: sv.c, backgroundColor: sv.bg, padding: "3px 10px", borderRadius: "var(--radius-pill)" }}><span style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: sv.c }} />{sv.l}</span>
       </div>
-      <button onClick={() => supplier.onPrefer(supplier.name)} style={{ flex: "0 0 auto", height: 28, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: isPreferred ? "var(--color-on-primary)" : "var(--color-ink)", backgroundColor: isPreferred ? "var(--color-primary)" : "transparent", border: isPreferred ? "none" : "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap" }}>{isPreferred ? "✓ 已优选" : "设为优选"}</button>
+      <button onClick={() => supplier.onPrefer(supplier.name)} style={{ flex: "0 0 auto", height: 28, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: isPreferred ? "var(--color-on-primary)" : "var(--color-ink)", backgroundColor: isPreferred ? "var(--color-primary)" : "transparent", border: isPreferred ? "none" : "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", whiteSpace: "nowrap" }}>{isPreferred ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg> 已优选</> : "设为优选"}</button>
     </div>
   );
 }

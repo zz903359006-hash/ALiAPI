@@ -103,7 +103,7 @@ export default function CostAnalyticsPage() {
         <Sel value={model} onChange={setModel} options={["全部模型", "GPT-4o", "Claude 3.5", "通义千问 Max", "DeepSeek V3"]} />
         {drillTeam && (
           <button onClick={() => setDrillTeam(null)} style={{ height: 36, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-brand-accent)", backgroundColor: "transparent", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>
-            清除下钻 ✕
+            清除下钻              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ verticalAlign: "middle" }}><path d="M4 4L12 12M12 4L4 12" /></svg>
           </button>
         )}
       </div>

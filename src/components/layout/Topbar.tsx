@@ -2,25 +2,24 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { getRouteTitle } from "@/config/titles";
 import NotificationDrawer from "./NotificationDrawer";
 import UpgradeOrgModal from "@/components/UpgradeOrgModal";
-import WorkspaceSwitcher from "./WorkspaceSwitcher";
+
+const GLOBAL_NAVS = [
+  { label: "首页", path: "/dashboard" },
+  { label: "模型广场", path: "/models" },
+  { label: "排行榜", path: "/rankings" },
+  { label: "文档", path: "/docs" },
+];
 
 export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
-  const title = getRouteTitle(pathname);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [isOrgMode, setIsOrgMode] = useState(false);
-  const [currentWorkspace, setCurrentWorkspace] = useState("personal");
-  const workspaces = [
-    { id: "personal", label: "个人空间", icon: "🧑‍💻" },
-    ...(isOrgMode ? [{ id: "银弹科技", label: "银弹科技", icon: "🏢", subtitle: "角色：管理员" }] : []),
-  ];
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -48,123 +47,64 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
           gap: "var(--spacing-lg)",
         }}
       >
-        {/* Left: Page title */}
-        <h1
-          className="flex-1 min-w-0 truncate"
-          style={{
-            fontSize: "var(--text-title-lg)",
-            fontWeight: 600,
-            lineHeight: "var(--text-title-lg--line-height)",
-            letterSpacing: "var(--text-title-lg--letter-spacing)",
-            color: "var(--color-ink)",
-            fontFamily: "var(--font-display)",
-          }}
-        >
-          {title}
-        </h1>
+        {/* Left: Global nav links */}
+        <nav className="flex items-center" style={{ gap: 4 }}>
+          {GLOBAL_NAVS.map((nav) => {
+            const active = pathname === nav.path;
+            return (
+              <button
+                key={nav.path}
+                onClick={() => router.push(nav.path)}
+                style={{
+                  height: 36,
+                  paddingLeft: 14,
+                  paddingRight: 14,
+                  fontSize: 14,
+                  fontWeight: active ? 600 : 500,
+                  color: active ? "var(--color-ink)" : "var(--color-muted)",
+                  backgroundColor: active ? "var(--color-surface-card)" : "transparent",
+                  border: "none",
+                  borderRadius: "var(--radius-md)",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => { if (active) return; e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; e.currentTarget.style.color = "var(--color-ink)"; }}
+                onMouseLeave={(e) => { if (active) return; e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--color-muted)"; }}
+              >
+                {nav.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Spacer */}
+        <div className="flex-1" />
 
         {/* Right: Actions */}
         <div className="flex items-center" style={{ gap: "var(--spacing-sm)" }}>
-          {/* Search placeholder */}
+          {/* Search */}
           <button
             onClick={() => onOpenCommandPalette?.()}
             className="flex items-center rounded-md transition-colors"
-            style={{
-              height: 36,
-              paddingLeft: "var(--spacing-sm)",
-              paddingRight: "var(--spacing-sm)",
-              gap: "var(--spacing-xs)",
-              fontSize: "var(--text-body-sm)",
-              fontWeight: 400,
-              color: "var(--color-muted)",
-              borderRadius: "var(--radius-md)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--color-surface-card)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            style={{ height: 36, paddingLeft: "var(--spacing-sm)", paddingRight: "var(--spacing-sm)", gap: "var(--spacing-xs)", fontSize: "var(--text-body-sm)", fontWeight: 400, color: "var(--color-muted)", borderRadius: "var(--radius-md)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
           >
             <SearchIcon />
             <span className="hidden lg:inline">搜索</span>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: "var(--color-muted-soft)",
-                backgroundColor: "var(--color-surface-card)",
-                padding: "1px 5px",
-                borderRadius: "var(--radius-xs)",
-                lineHeight: "16px",
-                marginLeft: 2,
-              }}
-            >
-              ⌘K
-            </span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: "var(--color-muted-soft)", backgroundColor: "var(--color-surface-card)", padding: "1px 5px", borderRadius: "var(--radius-xs)", lineHeight: "16px", marginLeft: 2 }}>⌘K</span>
           </button>
-
-          {/* Docs button */}
-          <button
-            onClick={() => window.location.href = "/docs"}
-            className="flex items-center rounded-md transition-colors"
-            style={{
-              height: 36,
-              paddingLeft: "var(--spacing-sm)",
-              paddingRight: "var(--spacing-sm)",
-              gap: "var(--spacing-xs)",
-              fontSize: "var(--text-body-sm)",
-              fontWeight: 500,
-              color: "var(--color-muted)",
-              borderRadius: "var(--radius-md)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--color-surface-card)";
-              e.currentTarget.style.color = "var(--color-ink)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.color = "var(--color-muted)";
-            }}
-          >
-            <DocsIcon />
-            <span className="hidden lg:inline">文档</span>
-          </button>
-
-          {/* Workspace Switcher */}
-          <WorkspaceSwitcher
-            workspaces={workspaces}
-            currentId={currentWorkspace}
-            onSwitch={(id) => { setCurrentWorkspace(id); setIsOrgMode(id !== "personal"); }}
-            onCreateOrg={() => { setToast("升级组织功能开发中"); setTimeout(() => setToast(""), 2500); }}
-          />
 
           {/* Notifications */}
           <button
             onClick={() => setDrawerOpen((v) => !v)}
             className="relative flex items-center justify-center rounded-full transition-colors"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "var(--radius-full)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--color-surface-card)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
+            style={{ width: 36, height: 36, borderRadius: "var(--radius-full)" }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
           >
             <BellIcon />
-            <span
-              className="absolute top-1 right-1 rounded-full"
-              style={{
-                width: 8,
-                height: 8,
-                backgroundColor: "var(--color-badge-orange)",
-                borderRadius: "var(--radius-full)",
-              }}
-            />
+            <span className="absolute top-1 right-1 rounded-full" style={{ width: 8, height: 8, backgroundColor: "var(--color-badge-orange)", borderRadius: "var(--radius-full)" }} />
           </button>
 
           {/* User menu */}
@@ -172,38 +112,16 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
             <button
               onClick={() => setUserMenuOpen((v) => !v)}
               className="flex items-center rounded-md transition-colors"
-              style={{
-                height: 36,
-                paddingLeft: "var(--spacing-xs)",
-                paddingRight: "var(--spacing-xs)",
-                gap: "var(--spacing-xs)",
-                fontSize: "var(--text-nav-link)",
-                fontWeight: 500,
-                color: "var(--color-ink)",
-                borderRadius: "var(--radius-md)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "var(--color-surface-card)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
+              style={{ height: 36, paddingLeft: "var(--spacing-xs)", paddingRight: "var(--spacing-xs)", gap: "var(--spacing-xs)", fontSize: "var(--text-nav-link)", fontWeight: 500, color: "var(--color-ink)", borderRadius: "var(--radius-md)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
             >
               <UserAvatar />
               <span className="hidden sm:inline">Hi, User</span>
             </button>
 
             {userMenuOpen && (
-              <div
-                className="absolute right-0 top-full mt-xxs w-48 py-xxs z-50"
-                style={{
-                  backgroundColor: "var(--color-canvas)",
-                  borderRadius: "var(--radius-md)",
-                  border: "1px solid var(--color-hairline)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                }}
-              >
+              <div className="absolute right-0 top-full mt-xxs w-48 py-xxs z-50" style={{ backgroundColor: "var(--color-canvas)", borderRadius: "var(--radius-md)", border: "1px solid var(--color-hairline)", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
                 <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>个人资料</UserMenuItem>
                 <UserMenuItem onClick={() => { router.push("/settings"); setUserMenuOpen(false); }}>设置 & 偏好</UserMenuItem>
                 {isOrgMode ? (
@@ -222,81 +140,27 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
         </div>
       </header>
 
-      {/* Notification Drawer */}
       <NotificationDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-
-      {/* Upgrade Org Modal */}
-      <UpgradeOrgModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onSuccess={() => { setIsOrgMode(true); setCurrentWorkspace("银弹科技"); setToast("升级成功，正在刷新"); setTimeout(() => setToast(""), 2500); }} />
+      <UpgradeOrgModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} onSuccess={() => { setIsOrgMode(true); setToast("升级成功，正在刷新"); setTimeout(() => setToast(""), 2500); }} />
     </>
   );
 }
 
 function SearchIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
 function BellIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M6 2.5a4 4 0 0 0-4 4v4l-1 1v1h14v-1l-1-1v-4a4 4 0 0 0-4-4H6Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M6 13a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function DocsIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M3 1h7l3 3v10a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 1v3h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 2.5a4 4 0 0 0-4 4v4l-1 1v1h14v-1l-1-1v-4a4 4 0 0 0-4-4H6Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M6 13a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.5" /></svg>;
 }
 
 function UserAvatar() {
-  return (
-    <span
-      className="flex items-center justify-center shrink-0"
-      style={{
-        width: 28,
-        height: 28,
-        borderRadius: "var(--radius-full)",
-        backgroundColor: "var(--color-surface-card)",
-        fontSize: "var(--text-caption)",
-        fontWeight: 500,
-        color: "var(--color-ink)",
-      }}
-    >
-      U
-    </span>
-  );
+  return <span className="flex items-center justify-center shrink-0" style={{ width: 28, height: 28, borderRadius: "var(--radius-full)", backgroundColor: "var(--color-surface-card)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)" }}>U</span>;
 }
 
 function UserMenuItem({ children, onClick, muted }: { children: React.ReactNode; onClick: () => void; muted?: boolean }) {
   return (
-    <button
-      onClick={onClick}
-      className="w-full text-left px-md py-xs transition-colors"
-      style={{
-        fontSize: "var(--text-body-sm)",
-        fontWeight: 500,
-        color: muted ? "var(--color-muted)" : "var(--color-ink)",
-        borderRadius: "var(--radius-xs)",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-      }}
+    <button onClick={onClick} className="w-full text-left px-md py-xs transition-colors" style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: muted ? "var(--color-muted)" : "var(--color-ink)", borderRadius: "var(--radius-xs)", background: "none", border: "none", cursor: "pointer" }}
       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
     >

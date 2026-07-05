@@ -37,10 +37,10 @@ const PURPOSES = ["生产", "测试", "个人探索"];
 const TEAMS = ["AI 平台部", "客服中心", "研发部", "数据分析组"];
 
 const STRATEGIES = [
-  { id: "balanced", label: "性价比优先", desc: "平衡成本与质量，适合大多数场景", icon: "⚖️" },
-  { id: "cost", label: "最低成本优先", desc: "优先选择单价最低的上游供应商", icon: "💰" },
-  { id: "quality", label: "最高质量优先", desc: "优先选择 HLE 评分最高的模型", icon: "⭐" },
-  { id: "latency", label: "最低延迟优先", desc: "优先选择响应速度最快的模型", icon: "⚡" },
+  { id: "balanced", label: "性价比优先", desc: "平衡成本与质量，适合大多数场景", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /> <path d="M12 2v15.77" /></svg> },
+  { id: "cost", label: "最低成本优先", desc: "优先选择单价最低的上游供应商", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 6v12M8 10h6a2 2 0 0 1 0 4H8" /></svg> },
+  { id: "quality", label: "最高质量优先", desc: "优先选择 HLE 评分最高的模型", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg> },
+  { id: "latency", label: "最低延迟优先", desc: "优先选择响应速度最快的模型", icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg> },
 ];
 
 const RISK_TEMPLATES: Record<string, { label: string; qps: number; calls: string; tokens: string }> = {
@@ -131,7 +131,7 @@ export default function CreateKeyPage() {
           return (
             <div key={i} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "var(--spacing-xs)", height: 40, padding: "0 var(--spacing-sm)", backgroundColor: active ? "var(--color-canvas)" : "transparent", borderRadius: "var(--radius-sm)", boxShadow: active ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.15s" }}>
               <span style={{ width: 22, height: 22, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, backgroundColor: done ? "var(--color-success)" : active ? "var(--color-primary)" : "var(--color-surface-strong)", color: "#fff" }}>
-                {done ? "✓" : i + 1}
+                {done ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg> : i + 1}
               </span>
               <span style={{ fontSize: "var(--text-nav-link)", fontWeight: 500, color: active ? "var(--color-ink)" : done ? "var(--color-muted)" : "var(--color-muted-soft)", whiteSpace: "nowrap" }}>{label}</span>
             </div>
@@ -246,7 +246,7 @@ function Step2({ form, update, preferredModel }: { form: FormData; update: (p: P
                 transition: "all 0.15s",
               }}
             >
-              <div style={{ fontSize: 24, marginBottom: "var(--spacing-xs)" }}>{s.icon}</div>
+              <div style={{ marginBottom: "var(--spacing-xs)" }}>{s.icon}</div>
               <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: 4 }}>{s.label}</div>
               <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{s.desc}</div>
             </div>
@@ -260,7 +260,7 @@ function Step2({ form, update, preferredModel }: { form: FormData; update: (p: P
           onClick={() => update({ showAdvanced: !form.showAdvanced })}
           style={{ ...textBtn, display: "flex", alignItems: "center", gap: "var(--spacing-xs)", fontSize: "var(--text-body-sm)" }}
         >
-          <span style={{ display: "inline-block", transition: "transform 0.15s", transform: form.showAdvanced ? "rotate(90deg)" : "rotate(0deg)" }}>▶</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ display: "inline-block", transition: "transform 0.15s", transform: form.showAdvanced ? "rotate(90deg)" : "rotate(0deg)" }}><polyline points="9 18 15 12 9 6" /></svg>
           自定义（高级权重调整）
         </button>
         {form.showAdvanced && (
@@ -360,9 +360,9 @@ function Step4({
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-lg)" }}>
       {/* Success header */}
       <div style={{ textAlign: "center", padding: "var(--spacing-lg) 0" }}>
-        <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: "var(--color-success)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto var(--spacing-md)" }}>✓</div>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", backgroundColor: "var(--color-success)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto var(--spacing-md)" }}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg></div>
         <h2 style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)", margin: "0 0 var(--spacing-xs)" }}>Key 创建成功</h2>
-        <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-warning)", margin: 0, fontWeight: 500 }}>⚠️ 请立即复制保存，此 Key 仅展示一次，关闭后将不再显示完整 Key。</p>
+        <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-warning)", margin: 0, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> 请立即复制保存，此 Key 仅展示一次，关闭后将不再显示完整 Key。</p>
       </div>
 
       {/* Key display */}

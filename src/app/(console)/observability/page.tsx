@@ -280,7 +280,11 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
               <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>输入 Token</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.inputTokens.toLocaleString()}</span></div>
               <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>输出 Token</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.outputTokens.toLocaleString()}</span></div>
               <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>总 Token</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.costTokens}</span></div>
-              <div><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", display: "block" }}>费用 (¥)</span><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{data.costRmb}</span></div>
+              <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 4, padding: "var(--spacing-sm)", backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-md)" }}>
+                <FeeRow label="原生 Token 成本" desc="模型官方计费" raw={data.costRmb} />
+                <FeeRow label="平台服务费" desc="按 5% 计算" raw={data.costRmb} isFee />
+                <FeeRow label="实际扣费总额" desc="" raw={data.costRmb} total />
+              </div>
             </div>
           </Sec>
 
@@ -291,8 +295,9 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
             </p>
             <Fld label="决策理由" value={data.routingReason} />
             {data.degraded && (
-              <div style={{ marginTop: "var(--spacing-sm)", padding: "var(--spacing-sm)", backgroundColor: "#FFFBEB", borderRadius: "var(--radius-md)", fontSize: "var(--text-caption)", color: "var(--color-warning)" }}>
-                ⚠ 本次请求触发故障自动降级，已从原始选择切换至 {data.routedModel}
+              <div style={{ marginTop: "var(--spacing-sm)", padding: "var(--spacing-sm)", backgroundColor: "#FFFBEB", borderRadius: "var(--radius-md)", fontSize: "var(--text-caption)", color: "var(--color-warning)", display: "flex", alignItems: "flex-start", gap: 6 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginTop: 1 }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                <span>本次请求触发故障自动降级，已从原始选择切换至 {data.routedModel}</span>
               </div>
             )}
           </Sec>
@@ -353,10 +358,10 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
           {(costHigh || abnormal) && (
             <div style={{ display: "flex", gap: "var(--spacing-sm)", marginBottom: "var(--spacing-sm)", flexWrap: "wrap" }}>
               <button onClick={() => window.location.href = `/routing/auto?key=${data.keyMask}`} style={{ height: 34, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                <span>⚙️</span> 调整该 Key 的路由策略
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg> 调整该 Key 的路由策略
               </button>
               <button onClick={() => setConfirmAction(`将模型「${data.model}」加入全局路由黑名单，后续请求将不再选择该模型。`)} style={{ height: 34, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-error)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                <span>🚫</span> 把 {data.model} 加入黑名单
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" /></svg> 把 {data.model} 加入黑名单
               </button>
             </div>
           )}
@@ -364,7 +369,7 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
           {(hleLow || abnormal) && (
             <div style={{ display: "flex", gap: "var(--spacing-sm)", marginBottom: "var(--spacing-sm)" }}>
               <button onClick={() => { showToast("已将「" + data.model + "」标记为低质模型，后续 HLE 评估将重点关注"); }} style={{ height: 34, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-warning)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                <span>⚠️</span> 将该模型标记为低质
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> 将该模型标记为低质
               </button>
             </div>
           )}
@@ -372,10 +377,10 @@ function LogDrawer({ data, onClose, onSwitchTab }: { data: LogRow | null; onClos
           {data.compensation && (
             <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
               <button onClick={() => { onClose(); onSwitchTab("insurance"); }} style={{ height: 34, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                <span>📋</span> 查看补偿详情
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" ry="1" /></svg> 查看补偿详情
               </button>
               <button onClick={() => setAppealOpen(true)} style={{ height: 34, padding: "0 var(--spacing-sm)", fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}>
-                <span>📝</span> 发起申诉
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg> 发起申诉
               </button>
             </div>
           )}
@@ -950,6 +955,24 @@ function StatusBadge({ s }: { s: string }) {
   };
   const c = m[s] ?? { label: s, fg: "#6B7280", bg: "#F3F4F6" };
   return <span style={{ display: "inline-flex", alignItems: "center", height: 22, paddingLeft: "var(--spacing-xs)", paddingRight: "var(--spacing-xs)", fontSize: "var(--text-caption)", fontWeight: 500, color: c.fg, backgroundColor: c.bg, borderRadius: "var(--radius-sm)" }}>{c.label}</span>;
+}
+
+function FeeRow({ label, desc, raw, isFee, total }: { label: string; desc: string; raw: string; isFee?: boolean; total?: boolean }) {
+  const val = parseFloat(raw.replace(/[¥,]/g, "")) || 0;
+  const native = val / 1.05;
+  const fee = val - native;
+  const display = total ? val : isFee ? fee : native;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <span style={{ fontSize: total ? "var(--text-body-sm)" : "var(--text-caption)", fontWeight: total ? 600 : 400, color: "var(--color-ink)" }}>{label}</span>
+        {desc && <span style={{ fontSize: 11, color: "var(--color-muted)" }}>({desc})</span>}
+      </div>
+      <span style={{ fontSize: total ? "var(--text-body-sm)" : "var(--text-caption)", fontWeight: total ? 700 : 600, color: total ? "var(--color-ink)" : isFee ? "var(--color-warning)" : "var(--color-ink)" }}>
+        ¥ {display.toFixed(4)}
+      </span>
+    </div>
+  );
 }
 
 function ButXn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {

@@ -1,21 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Tabs from "@/components/layout/Tabs";
 import type { TabItem } from "@/components/layout/Tabs";
 
-function genKey(): string {
-  const chars = "abcdef0123456789";
-  return "sk-ali-" + Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-}
-
 export default function CreateKeyModal({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: (name: string, key: string) => void }) {
-  if (!open) return null;
   const [step, setStep] = useState<"form" | "done">("form");
   const [name, setName] = useState("");
-  const [generatedKey] = useState(genKey);
+  const [generatedKey, setGeneratedKey] = useState("");
   const [copiedKey, setCopiedKey] = useState(false);
   const [codeTab, setCodeTab] = useState("curl");
+
+  useEffect(() => {
+    if (open) {
+      setStep("form");
+      setName("");
+      setGeneratedKey("sk-ali-" + Array.from({ length: 32 }, () => "abcdef0123456789"[Math.floor(Math.random() * 16)]).join(""));
+      setCopiedKey(false);
+      setCodeTab("curl");
+    }
+  }, [open]);
+
+  if (!open) return null;
   const displayName = name.trim() || "Default Key";
 
   const modelId = "gpt-4o-mini";

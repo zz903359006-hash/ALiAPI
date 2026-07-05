@@ -70,7 +70,11 @@ export default function CreateKeyPage() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(defaultForm);
   const [preferredModel, setPreferredModel] = useState("");
-  const [generatedKey] = useState(() => "sk-" + Array.from({ length: 24 }, () => Math.random().toString(36)[2]).join(""));
+  const [generatedKey, setGeneratedKey] = useState("");
+
+  useEffect(() => {
+    setGeneratedKey("sk-" + Array.from({ length: 24 }, () => Math.random().toString(36)[2]).join(""));
+  }, []);
 
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("model");

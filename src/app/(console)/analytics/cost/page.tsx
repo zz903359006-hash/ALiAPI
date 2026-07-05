@@ -21,7 +21,7 @@ const MOCK_DETAIL = Array.from({ length: 20 }, (_, i) => ({
   member: ["张明", "刘伟", "李芳", "周婷", "王磊", "陈浩", "陈静", "林峰", "赵强", "孙鹏"][i % 10],
   key: ["sk-****8f2c", "sk-****1a9b", "sk-****3e2d", "sk-****7a4f", "sk-****6b0c"][i % 5],
   model: ["GPT-4o", "Claude 3.5", "通义千问 Max", "DeepSeek V3", "GPT-4o (代码)"][i % 5],
-  cost: (Math.random() * 5 + 0.1).toFixed(3),
+  cost: ((i * 314 + 500) % 5000 / 1000 + 0.1).toFixed(3),
   assetType: ["本金", "奖励额度", "保险补偿", "本金", "本金"][i % 5],
 }));
 

@@ -428,7 +428,11 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
           {isEmployee ? (
             <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
               <button onClick={() => { onClose(); }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>关闭</button>
-              <button onClick={() => { onClose(); window.location.href = `/playground?model=${data.nameId}`; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>在线测试</button>
+              {sessionStorage.getItem("hasClaimedKey") ? (
+                <button onClick={() => { onClose(); window.location.href = `/playground?model=${data.nameId}`; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>在线测试</button>
+              ) : (
+                <button onClick={() => { onClose(); window.location.href = "/keys"; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>前往领取 API Key</button>
+              )}
             </div>
           ) : (
           <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>

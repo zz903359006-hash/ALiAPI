@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { isEmployee } from "@/lib/role";
 
 const MOCK_HISTORY = [
   { id: "h1", title: "测试 GPT-4 代码能力", time: "5 分钟前" },
@@ -48,6 +49,16 @@ export default function PlaygroundPage() {
   useEffect(() => {
     const m = new URLSearchParams(window.location.search).get("model");
     if (m) setSelectedModel(m);
+  }, []);
+
+  useEffect(() => {
+    if (isEmployee) {
+      const hasClaimedKey = sessionStorage.getItem("hasClaimedKey");
+      if (!hasClaimedKey) {
+        console.log("[Playground Guard] Employee has no enabled API Key. Redirecting to /keys");
+        window.location.href = "/keys?redirectReason=您还未领取 API Key，请先领取凭证后再进行在线测试";
+      }
+    }
   }, []);
 
   useEffect(() => {

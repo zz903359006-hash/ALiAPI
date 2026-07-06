@@ -65,10 +65,10 @@ function DashboardVisual() {
         <div style={{ width: "62%", height: "100%", borderRadius: 4, background: "var(--color-primary)" }} />
       </div>
       <div style={{ display: "flex", gap: 10, marginTop: "auto" }}>
-        {["研发部", "市场部", "客服部"].map((dept) => (
+        {["研发部", "市场部", "客服部"].map((dept, idx) => (
           <div key={dept} style={{ flex: 1, background: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", padding: 10 }}>
             <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginBottom: 4 }}>{dept}</div>
-            <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{Math.floor(Math.random() * 5000 + 1000).toLocaleString()}</div>
+            <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>{[4800, 3200, 1500][idx].toLocaleString()}</div>
           </div>
         ))}
       </div>

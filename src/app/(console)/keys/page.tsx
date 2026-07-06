@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getRouteTitle } from "@/config/titles";
 import Tabs from "@/components/layout/Tabs";
 import { isEmployee } from "@/lib/role";
@@ -110,8 +110,29 @@ export default function KeysPage() {
   const [claimLoading, setClaimLoading] = useState(false);
   const [claimDone, setClaimDone] = useState(false);
   const [toast, setToast] = useState("");
+  const [keys, setKeys] = useState<CallKey[]>(MOCK_KEYS);
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 3000); };
+
+  const toggleKeyStatus = (id: string) => {
+    setKeys((prev) => prev.map((k) => k.id === id ? { ...k, status: k.status === "normal" ? "paused" : "normal" } : k));
+  };
+
+  const resetKey = (id: string) => {
+    showToast("Key 已重置，新配置将在 30 秒后生效");
+  };
+
+  const deleteKey = (id: string) => {
+    setKeys((prev) => prev.filter((k) => k.id !== id));
+  };
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get("redirectReason");
+    if (reason) {
+      showToast(decodeURIComponent(reason));
+      window.history.replaceState({}, "", "/keys");
+    }
+  }, []);
 
   const handleClaim = () => {
     setClaimLoading(true);
@@ -134,7 +155,8 @@ export default function KeysPage() {
         errorRate: "0%",
         costTrend: "-",
       };
-      MOCK_KEYS.unshift(newKey);
+      setKeys((prev) => [newKey, ...prev]);
+      sessionStorage.setItem("hasClaimedKey", "true");
       setClaimLoading(false);
       setClaimDone(true);
       showToast("领取成功！请在下方列表查看并复制使用。");
@@ -282,7 +304,7 @@ export default function KeysPage() {
 
           {/* Table */}
           <CallKeyTable
-            data={MOCK_KEYS}
+            data={keys}
             selectedIds={selectedIds}
             isEmployee={isEmployee}
             onSelect={(id, checked) => {
@@ -293,9 +315,12 @@ export default function KeysPage() {
               });
             }}
             onSelectAll={(checked) => {
-              setSelectedIds(checked ? new Set(MOCK_KEYS.map((k) => k.id)) : new Set());
+              setSelectedIds(checked ? new Set(keys.map((k) => k.id)) : new Set());
             }}
             onViewDetail={setDetailKey}
+            onToggleStatus={toggleKeyStatus}
+            onResetKey={resetKey}
+            onDeleteKey={deleteKey}
           />
 
           {/* Pagination */}
@@ -335,6 +360,9 @@ function CallKeyTable({
   onSelect,
   onSelectAll,
   onViewDetail,
+  onToggleStatus,
+  onResetKey,
+  onDeleteKey,
 }: {
   data: CallKey[];
   selectedIds: Set<string>;
@@ -342,6 +370,9 @@ function CallKeyTable({
   onSelect: (id: string, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
   onViewDetail: (key: CallKey) => void;
+  onToggleStatus: (id: string) => void;
+  onResetKey: (id: string) => void;
+  onDeleteKey: (id: string) => void;
 }) {
   if (data.length === 0) {
     return <EmptyState />;
@@ -410,8 +441,17 @@ function CallKeyTable({
                   </Td>
                   <Td style={{ textAlign: "right" }}>
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}>
-                      <ActionLink onClick={() => onViewDetail(row)}>查看详情</ActionLink>
-                      <ActionLink dim>复制</ActionLink>
+                      {row.status === "normal" ? (
+                        <>
+                          <ActionLink onClick={() => onResetKey(row.id)}>重置</ActionLink>
+                          <ActionLink onClick={() => onToggleStatus(row.id)}>停用</ActionLink>
+                        </>
+                      ) : (
+                        <>
+                          <ActionLink onClick={() => onToggleStatus(row.id)}>启用</ActionLink>
+                          <ActionLink dim onClick={() => onDeleteKey(row.id)}>删除</ActionLink>
+                        </>
+                      )}
                     </div>
                   </Td>
                 </>

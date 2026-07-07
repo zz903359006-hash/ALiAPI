@@ -188,6 +188,7 @@ export default function KeysPage() {
         >
           {getRouteTitle("/keys")}
         </h1>
+        {!isEmployee && (
         <p
           style={{
             marginTop: "var(--spacing-xs)",
@@ -198,14 +199,17 @@ export default function KeysPage() {
         >
           管理可用于业务调用的 API Key，支持限速、路由策略绑定、禁用与统计。
         </p>
+        )}
       </div>
 
       {/* ================================================================
-          Tabs
+          Tabs — hidden for employees (no grouping needed)
           ================================================================ */}
+      {!isEmployee && (
       <div style={{ marginBottom: "var(--spacing-md)" }}>
         <Tabs tabs={tabItems} activeKey={activeTab} onChange={setActiveTab} />
       </div>
+      )}
 
       {/* ================================================================
           Tab: 调用 Key 列表
@@ -279,7 +283,8 @@ export default function KeysPage() {
             </div>
           )}
 
-          {/* Toolbar */}
+          {/* Toolbar — hidden for employees (no search/filter needed) */}
+          {!isEmployee && (
           <div
             style={{
               display: "flex",
@@ -301,6 +306,7 @@ export default function KeysPage() {
 
             {!isEmployee && <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>}
           </div>
+          )}
 
           {/* Table */}
           <CallKeyTable
@@ -375,7 +381,7 @@ function CallKeyTable({
   onDeleteKey: (id: string) => void;
 }) {
   if (data.length === 0) {
-    return <EmptyState />;
+    return <EmptyState isEmployee={isEmployee} />;
   }
 
   const allSelected = data.length > 0 && data.every((k) => selectedIds.has(k.id));
@@ -802,7 +808,7 @@ function MiniStat({ label, value, sub, up }: { label: string; value: string; sub
   );
 }
 
-function EmptyState() {
+function EmptyState({ isEmployee }: { isEmployee?: boolean }) {
   return (
     <div
       style={{
@@ -835,12 +841,12 @@ function EmptyState() {
         </svg>
       </div>
       <span style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-xs)" }}>
-        暂未创建调用 Key
+        {isEmployee ? "暂无已领取的 API 凭证" : "暂未创建调用 Key"}
       </span>
       <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginBottom: "var(--spacing-lg)" }}>
-        创建第一个调用 Key，开始通过 AliAPI 接入模型调用。
+        {isEmployee ? "请先在上方领取您的 API Key 以开始使用。" : "创建第一个调用 Key，开始通过 AliAPI 接入模型调用。"}
       </span>
-      <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>
+      {!isEmployee && <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>}
     </div>
   );
 }

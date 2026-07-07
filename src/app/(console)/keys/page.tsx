@@ -104,7 +104,6 @@ const MOCK_KEYS: CallKey[] = [
    Page
    ================================================================ */
 export default function KeysPage() {
-  const [activeTab, setActiveTab] = useState("list");
   const [detailKey, setDetailKey] = useState<CallKey | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [claimLoading, setClaimLoading] = useState(false);
@@ -163,11 +162,6 @@ export default function KeysPage() {
     }, 1000);
   };
 
-  const tabItems = [
-    { key: "list", label: "调用 Key 列表", content: null },
-    { key: "groups", label: "Key 分组视图", content: null },
-  ];
-
   return (
     <div>
       {toast && <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 999, padding: "var(--spacing-sm) var(--spacing-lg)", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontSize: "var(--text-body-sm)", fontWeight: 500, borderRadius: "var(--radius-md)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>{toast}</div>}
@@ -203,19 +197,8 @@ export default function KeysPage() {
       </div>
 
       {/* ================================================================
-          Tabs — hidden for employees (no grouping needed)
+          领取列表（无 Tab 切换、无筛选区）
           ================================================================ */}
-      {!isEmployee && (
-      <div style={{ marginBottom: "var(--spacing-md)" }}>
-        <Tabs tabs={tabItems} activeKey={activeTab} onChange={setActiveTab} />
-      </div>
-      )}
-
-      {/* ================================================================
-          Tab: 调用 Key 列表
-          ================================================================ */}
-      {activeTab === "list" && (
-        <>
           {/* Batch action bar — hidden for employees */}
           {!isEmployee && selectedIds.size > 0 && (
             <div
@@ -283,31 +266,6 @@ export default function KeysPage() {
             </div>
           )}
 
-          {/* Toolbar — hidden for employees (no search/filter needed) */}
-          {!isEmployee && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "var(--spacing-sm)",
-              marginBottom: "var(--spacing-md)",
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", flexWrap: "wrap" }}>
-              {/* Search */}
-              <SearchInput />
-              {/* Status filter */}
-              <SelectFilter options={["全部状态", "正常", "暂停", "冻结"]} />
-              {!isEmployee && <SelectFilter options={["全部团队", "AI 平台部", "客服中心", "产品研发", "增长与投放", "数据平台"]} />}
-              {!isEmployee && <SelectFilter options={["全部策略", "性价比优先", "最低成本", "Auto 路由中心"]} />}
-            </div>
-
-            {!isEmployee && <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>}
-          </div>
-          )}
-
           {/* Table */}
           <CallKeyTable
             data={keys}
@@ -331,18 +289,6 @@ export default function KeysPage() {
 
           {/* Pagination */}
           <Pagination total={MOCK_KEYS.length} />
-        </>
-      )}
-
-      {/* ================================================================
-          Tab: Key 分组视图 (placeholder)
-          ================================================================ */}
-      {activeTab === "groups" && (
-        <EmptyPlaceholder
-          title="Key 分组视图"
-          desc="按团队/项目分组展示 Key，方便批量管理。后续补充。"
-        />
-      )}
 
       {/* ================================================================
           Key Detail Drawer

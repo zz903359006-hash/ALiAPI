@@ -9,9 +9,9 @@ export type NavItem = {
 };
 
 /*
- * Sidebar nav — core workspace only:
- *   Group 1: API Key 管理, 用量分析, 在线测试, 模型广场, 充值缴费余额管理
- * Other enterprise modules are kept in code but removed from sidebar rendering.
+ * Sidebar nav — core workspace + admin section:
+ *   Group 1: Common items (all roles)
+ *   Group 2: Admin items (Admin role only, rendered below divider)
  */
 export const navGroups: NavItem[][] = [
   [
@@ -19,7 +19,11 @@ export const navGroups: NavItem[][] = [
     { key: "analytics-usage", label: "用量分析", path: "/analytics/usage" },
     { key: "playground", label: "在线测试", path: "/playground" },
     { key: "models", label: "模型广场", path: "/models" },
-    { key: "billing-center", label: "余额管理", path: "/billing" },
+  ],
+  [
+    { key: "admin-members", label: "成员", path: "/admin/members" },
+    { key: "admin-billing", label: "财务", path: "/admin/billing" },
+    { key: "admin-settings", label: "设置", path: "/admin/settings" },
   ],
 ];
 

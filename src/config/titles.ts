@@ -19,6 +19,9 @@ export const routeTitleMap: Record<string, string> = {
   "/settings/security": "安全与审计中心",
    "/notifications": "通知中心",
    "/enterprise": "企业AI一站式服务",
+   "/admin/members": "成员",
+   "/admin/billing": "财务",
+   "/admin/settings": "设置",
  };
 
 export function getRouteTitle(pathname: string): string {

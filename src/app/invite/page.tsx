@@ -30,7 +30,7 @@ export default function InvitePage() {
     if (!code) { showToast("请输入验证码"); return; }
     setView("loading");
     setTimeout(() => setView("success"), 1200);
-    setTimeout(() => { window.location.href = "/dashboard"; }, 3000);
+    setTimeout(() => { window.location.href = "/keys"; }, 3000);
   };
 
   return (
@@ -193,7 +193,7 @@ function AlreadyJoinedView() {
         您已加入该组织
       </h2>
       <button
-        onClick={() => window.location.href = "/dashboard"}
+        onClick={() => window.location.href = "/keys"}
         style={{
           height: 40,
           paddingLeft: "var(--spacing-xl)",

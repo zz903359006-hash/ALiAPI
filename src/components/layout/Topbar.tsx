@@ -7,7 +7,6 @@ import UpgradeOrgModal from "@/components/UpgradeOrgModal";
 import { isEmployee } from "@/lib/role";
 
 const GLOBAL_NAVS = [
-  { label: "首页", path: "/dashboard" },
   { label: "模型广场", path: "/models" },
   { label: "排行榜", path: "/rankings" },
   { label: "文档", path: "/docs" },

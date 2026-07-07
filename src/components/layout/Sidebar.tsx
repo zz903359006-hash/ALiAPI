@@ -76,6 +76,7 @@ const EMPLOYEE_KEYS = ["api-keys", "analytics-usage", "playground", "models"];
         {!isEmployee && (
           <>
             <div style={{ height: 1, backgroundColor: C.borderLight, margin: "var(--spacing-sm) var(--spacing-md)" }} />
+            <div style={{ fontSize: 11, fontWeight: 400, color: "var(--color-muted-soft)", padding: "var(--spacing-xs) var(--spacing-lg) 0", marginBottom: 2 }}>管理员</div>
             {navGroups[1].map((item) => {
               const active = isActive(item);
               return <NavItemLink key={item.key} item={item} active={active} />;

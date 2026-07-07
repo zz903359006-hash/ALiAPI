@@ -8,10 +8,9 @@ export interface BreadcrumbRule {
   segments: (pathParts: string[]) => BreadcrumbItem[];
 }
 
-const root: BreadcrumbItem = { label: "控制台", href: "/dashboard" };
+const root: BreadcrumbItem = { label: "控制台", href: "/keys" };
 
 export const breadcrumbRules: BreadcrumbRule[] = [
-  { pattern: "/dashboard", segments: () => [root] },
   { pattern: "/models", segments: () => [root] },
   { pattern: "/analytics/usage", segments: () => [root] },
   { pattern: "/analytics/cost", segments: () => [root] },

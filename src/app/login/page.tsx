@@ -29,7 +29,7 @@ export default function LoginPage() {
   const handleLogin = () => {
     if (!phone || !code) { showToast("请填写手机号和验证码"); return; }
     setLoading(true);
-    setTimeout(() => { setLoading(false); window.location.href = "/dashboard"; }, 1000);
+    setTimeout(() => { setLoading(false); window.location.href = "/keys"; }, 1000);
   };
 
   return (

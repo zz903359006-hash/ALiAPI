@@ -1,5 +1,4 @@
 export const routeTitleMap: Record<string, string> = {
-  "/dashboard": "控制台总览",
   "/models": "模型广场",
   "/analytics/usage": "用量分析",
   "/analytics/cost": "费用分析",

@@ -2,36 +2,39 @@
 
 import { useState, useMemo } from "react";
 import { getRouteTitle } from "@/config/titles";
+import { currentUser } from "@/lib/role";
 
-/* ================================================================
-   Mock data
-   ================================================================ */
-const MY_KEYS = [
-  { id: "sk-****8f2c", name: "生产环境主 Key" },
-  { id: "sk-****1a9b", name: "客服机器人 Key" },
-  { id: "sk-****3e2d", name: "测试环境 Key" },
-  { id: "sk-****7a4f", name: "投放分析 Key" },
-  { id: "sk-****6b0c", name: "数据导出 Key" },
-];
+const MY_KEYS_DATA: Record<string, { id: string; name: string }[]> = {
+  "张明": [
+    { id: "sk-****8f2c", name: "生产环境主 Key" },
+    { id: "sk-****3e2d", name: "测试环境 Key" },
+  ],
+  "李芳": [
+    { id: "sk-****1a9b", name: "客服机器人 Key" },
+  ],
+  "赵强": [
+    { id: "sk-****6b0c", name: "数据导出 Key" },
+  ],
+};
+
+const MY_KEYS = MY_KEYS_DATA[currentUser] || [];
 
 const MODELS = ["全部模型", "GPT-4o", "Claude 3.5", "通义千问 Max", "DeepSeek V3"];
 
+const myKeyIds = new Set(MY_KEYS.map((k) => k.id));
+
 const MOCK_DETAIL = Array.from({ length: 20 }, (_, i) => ({
   time: `2026-06-${(i % 30 + 1).toString().padStart(2, "0")} ${(8 + (i % 12)).toString().padStart(2, "0")}:${(i * 3 % 60).toString().padStart(2, "0")}`,
-  keyId: ["sk-****8f2c", "sk-****1a9b", "sk-****3e2d", "sk-****7a4f", "sk-****6b0c"][i % 5],
+  keyId: myKeyIds.has("sk-****8f2c") ? ["sk-****8f2c", "sk-****3e2d"][i % 2] : (myKeyIds.has("sk-****1a9b") ? "sk-****1a9b" : myKeyIds.has("sk-****6b0c") ? "sk-****6b0c" : "sk-****7a4f"),
   model: ["GPT-4o", "Claude 3.5", "通义千问 Max", "DeepSeek V3", "GPT-4o (代码)"][i % 5],
   inputTokens: ((i * 2718 + 50000) % 50000 + 1000).toFixed(0),
   outputTokens: ((i * 1800 + 20000) % 30000 + 500).toFixed(0),
   status: ["成功", "成功", "成功", "失败", "成功"][i % 5],
-}));
+})).filter((r) => myKeyIds.has(r.keyId));
 
-const TOP_KEYS = [
-  { name: "生产环境主 Key", id: "sk-****8f2c", tokens: "890,000" },
-  { name: "客服机器人 Key", id: "sk-****1a9b", tokens: "560,000" },
-  { name: "投放分析 Key", id: "sk-****7a4f", tokens: "430,000" },
-  { name: "数据导出 Key", id: "sk-****6b0c", tokens: "350,000" },
-  { name: "测试环境 Key", id: "sk-****3e2d", tokens: "210,000" },
-];
+const TOP_KEYS = MY_KEYS.map((k) => ({
+  name: k.name, id: k.id, tokens: k.id === "sk-****8f2c" ? "890,000" : "210,000",
+})).sort((a, b) => parseInt(b.tokens.replace(/,/g, "")) - parseInt(a.tokens.replace(/,/g, "")));
 
 /* ================================================================
    Page
@@ -89,7 +92,7 @@ export default function UsageAnalyticsPage() {
 
       {/* Charts */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-lg)", marginBottom: "var(--spacing-xl)" }}>
-        <BarChart title="Key 消耗排行 (Top 5)" data={TOP_KEYS.map((k) => ({ name: k.name, tokens: k.tokens, pct: parseInt(k.tokens.replace(/,/g, "")) / 890000 * 100 }))} wide />
+        <BarChart title="Key 消耗排行 (Top 5)" data={TOP_KEYS.map((k, _, arr) => { const maxVal = Math.max(...arr.map((x) => parseInt(x.tokens.replace(/,/g, "")))); return { name: k.name, tokens: k.tokens, pct: parseInt(k.tokens.replace(/,/g, "")) / maxVal * 100 }; })} wide />
       </div>
 
       {/* Detail table */}

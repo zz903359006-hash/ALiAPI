@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { getRouteTitle } from "@/config/titles";
 import Tabs from "@/components/layout/Tabs";
-import { isEmployee } from "@/lib/role";
+import { isEmployee, currentUser } from "@/lib/role";
 
 /* ================================================================
    Mock data — 9-column structure per interaction spec §3.2.2
@@ -104,12 +104,17 @@ const MOCK_KEYS: CallKey[] = [
    Page
    ================================================================ */
 export default function KeysPage() {
+  const MAX_KEYS = 5;
   const [detailKey, setDetailKey] = useState<CallKey | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [claimLoading, setClaimLoading] = useState(false);
   const [claimDone, setClaimDone] = useState(false);
   const [toast, setToast] = useState("");
-  const [keys, setKeys] = useState<CallKey[]>(MOCK_KEYS);
+  const [keys, setKeys] = useState<CallKey[]>(MOCK_KEYS.filter((k) => k.member === currentUser));
+  const [claimModalOpen, setClaimModalOpen] = useState(false);
+  const [keyName, setKeyName] = useState("");
+  const keyCount = keys.length;
+  const atLimit = keyCount >= MAX_KEYS;
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(""), 3000); };
 
@@ -134,16 +139,17 @@ export default function KeysPage() {
   }, []);
 
   const handleClaim = () => {
+    if (!keyName.trim()) return;
     setClaimLoading(true);
     setTimeout(() => {
       const newKey: CallKey = {
         id: "sk-default-" + Date.now().toString(36),
-        name: "Default-Assigned-Key-01",
+        name: keyName.trim(),
         mask: "sk-****" + Date.now().toString(36).slice(-4),
         fullKey: "sk-default-" + Array.from({ length: 40 }, () => Math.random().toString(36)[2]).join(""),
-        note: "员工领取默认 Key",
+        note: "",
         team: "当前团队",
-        member: "我",
+        member: currentUser,
         routing: "性价比优先",
         rateLimit: "QPS 30 · 日调用 100k",
         status: "normal",
@@ -157,9 +163,10 @@ export default function KeysPage() {
       setKeys((prev) => [newKey, ...prev]);
       sessionStorage.setItem("hasClaimedKey", "true");
       setClaimLoading(false);
-      setClaimDone(true);
-      showToast("领取成功！请在下方列表查看并复制使用。");
-    }, 1000);
+      setClaimModalOpen(false);
+      setKeyName("");
+      showToast("领取成功");
+    }, 800);
   };
 
   return (
@@ -169,105 +176,19 @@ export default function KeysPage() {
       {/* ================================================================
           Page Header
           ================================================================ */}
-      <div style={{ marginBottom: "var(--spacing-lg)" }}>
-        <h1
-          style={{
-            fontSize: "var(--text-display-md)",
-            fontWeight: 600,
-            lineHeight: "var(--text-display-md--line-height)",
-            letterSpacing: "var(--text-display-md--letter-spacing)",
-            color: "var(--color-ink)",
-            fontFamily: "var(--font-display)",
-          }}
-        >
+      <div style={{ marginBottom: "var(--spacing-lg)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--spacing-md)" }}>
+        <h1 style={{ fontSize: "var(--text-display-md)", fontWeight: 600, lineHeight: "var(--text-display-md--line-height)", letterSpacing: "var(--text-display-md--letter-spacing)", color: "var(--color-ink)", fontFamily: "var(--font-display)", margin: 0 }}>
           {getRouteTitle("/keys")}
         </h1>
-        {!isEmployee && (
-        <p
-          style={{
-            marginTop: "var(--spacing-xs)",
-            fontSize: "var(--text-body-sm)",
-            lineHeight: "var(--text-body-sm--line-height)",
-            color: "var(--color-muted)",
-          }}
-        >
-          管理可用于业务调用的 API Key，支持限速、路由策略绑定、禁用与统计。
-        </p>
-        )}
+        <button onClick={() => setClaimModalOpen(true)} disabled={atLimit} title={atLimit ? "已达领取上限" : ""} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: atLimit ? "#9CA3AF" : "var(--color-on-primary)", backgroundColor: atLimit ? "var(--color-surface-strong)" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: atLimit ? "not-allowed" : "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
+          领取
+        </button>
       </div>
-
       {/* ================================================================
-          领取列表（无 Tab 切换、无筛选区）
+          领取列表
           ================================================================ */}
-          {/* Batch action bar — hidden for employees */}
-          {!isEmployee && selectedIds.size > 0 && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "var(--spacing-sm) var(--spacing-md)",
-                marginBottom: "var(--spacing-sm)",
-                backgroundColor: "#EFF6FF",
-                border: "1px solid #BFDBFE",
-                borderRadius: "var(--radius-md)",
-                fontSize: "var(--text-body-sm)",
-                color: "var(--color-ink)",
-              }}
-            >
-              <span>已选择 {selectedIds.size} 项</span>
-              <div style={{ display: "flex", gap: "var(--spacing-xs)" }}>
-                <BatchBtn>批量暂停</BatchBtn>
-                <BatchBtn>批量更换策略</BatchBtn>
-                <BatchBtn danger>批量冻结</BatchBtn>
-                <button
-                  onClick={() => setSelectedIds(new Set())}
-                  style={{
-                    fontSize: "var(--text-body-sm)",
-                    fontWeight: 500,
-                    color: "var(--color-muted)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    marginLeft: "var(--spacing-xs)",
-                  }}
-                >
-                  取消选择
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Employee: Claim card */}
-          {isEmployee && !claimDone && (
-            <div style={{ marginBottom: "var(--spacing-lg)", backgroundColor: "var(--color-surface-soft)", border: "2px dashed var(--color-hairline)", borderRadius: "var(--radius-lg)", padding: "var(--spacing-md) var(--spacing-lg)", display: "flex", alignItems: "center", gap: "var(--spacing-lg)" }}>
-              <div style={{ width: 44, height: 44, borderRadius: "var(--radius-md)", backgroundColor: "var(--color-canvas)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-ink)" strokeWidth="1.8"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", fontFamily: "var(--font-display)" }}>领取 API 凭证</div>
-                <div style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginTop: 2 }}>系统将自动分配一个 API Key 供您日常调用使用，免去填写复杂配置。</div>
-              </div>
-              <button onClick={handleClaim} disabled={claimLoading} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: claimLoading ? "#9CA3AF" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: claimLoading ? "not-allowed" : "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
-                {claimLoading ? "分配中..." : "立即领取"}
-              </button>
-            </div>
-          )}
-
-          {/* Employee: Claim success */}
-          {isEmployee && claimDone && (
-            <div style={{ marginBottom: "var(--spacing-lg)", padding: "var(--spacing-sm) var(--spacing-md)", backgroundColor: "#ECFDF5", border: "1px solid #A7F3D0", borderRadius: "var(--radius-md)", display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
-              <span style={{ fontSize: 14, flexShrink: 0 }}>🎉</span>
-              <span style={{ flex: 1, fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>领取成功！请复制下方列表中的 Key 开始使用。</span>
-              <button onClick={() => setClaimDone(false)} style={{ width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", color: "var(--color-muted)", cursor: "pointer", flexShrink: 0 }}>
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4L12 12M12 4L4 12" /></svg>
-              </button>
-            </div>
-          )}
-
-          {/* Table */}
-          <CallKeyTable
+      {/* Table */}
+      <CallKeyTable
             data={keys}
             selectedIds={selectedIds}
             isEmployee={isEmployee}
@@ -285,6 +206,7 @@ export default function KeysPage() {
             onToggleStatus={toggleKeyStatus}
             onResetKey={resetKey}
             onDeleteKey={deleteKey}
+            showToast={showToast}
           />
 
           {/* Pagination */}
@@ -298,6 +220,38 @@ export default function KeysPage() {
         onClose={() => setDetailKey(null)}
         isEmployee={isEmployee}
       />
+
+      {/* Claim modal */}
+      {claimModalOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.4)" }} onClick={() => setClaimModalOpen(false)}>
+          <div style={{ width: 420, maxWidth: "90vw", backgroundColor: "var(--color-canvas)", borderRadius: "var(--radius-lg)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden" }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ padding: "var(--spacing-lg)", borderBottom: "1px solid var(--color-hairline-soft)" }}>
+              <span style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)" }}>领取 API Key</span>
+            </div>
+            <div style={{ padding: "var(--spacing-lg)", display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+              <div style={{ fontSize: "var(--text-caption)", color: atLimit ? "var(--color-error)" : "var(--color-muted)" }}>
+                已领取 {keyCount} / {MAX_KEYS} 个（公司配额上限）
+                {atLimit && <span style={{ display: "block", marginTop: 2 }}>已达到领取上限，如需更多请联系管理员</span>}
+              </div>
+              <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>Key 名称</span>
+                <input value={keyName} onChange={(e) => setKeyName(e.target.value)} placeholder="如 测试、生产环境" autoFocus
+                  disabled={atLimit}
+                  style={{ height: 40, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-md)", color: atLimit ? "var(--color-muted)" : "var(--color-ink)", background: atLimit ? "var(--color-surface-soft)" : "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", outline: "none", width: "100%", cursor: atLimit ? "not-allowed" : "auto" }}
+                  onFocus={(e) => { if (!atLimit) e.currentTarget.style.borderColor = "var(--color-ink)"; }}
+                  onBlur={(e) => { if (!atLimit) e.currentTarget.style.borderColor = "var(--color-hairline)"; }}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !atLimit) handleClaim(); }} />
+              </label>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-sm)" }}>
+                <button onClick={() => setClaimModalOpen(false)} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>取消</button>
+                <button onClick={handleClaim} disabled={atLimit || claimLoading || !keyName.trim()} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: (atLimit || claimLoading || !keyName.trim()) ? "#9CA3AF" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: (atLimit || claimLoading || !keyName.trim()) ? "not-allowed" : "pointer" }}>
+                  {claimLoading ? "领取中..." : "确认领取"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -315,6 +269,7 @@ function CallKeyTable({
   onToggleStatus,
   onResetKey,
   onDeleteKey,
+  showToast,
 }: {
   data: CallKey[];
   selectedIds: Set<string>;
@@ -325,6 +280,7 @@ function CallKeyTable({
   onToggleStatus: (id: string) => void;
   onResetKey: (id: string) => void;
   onDeleteKey: (id: string) => void;
+  showToast: (m: string) => void;
 }) {
   if (data.length === 0) {
     return <EmptyState isEmployee={isEmployee} />;
@@ -334,116 +290,48 @@ function CallKeyTable({
   const someSelected = data.some((k) => selectedIds.has(k.id));
 
   return (
-    <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)", overflow: "hidden", overflowX: "auto" }}>
-      <table style={{ width: "100%", minWidth: isEmployee ? 650 : 1300, borderCollapse: "collapse" }}>
+    <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)" }}>
+      <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ backgroundColor: "#F9FAFB" }}>
-            {isEmployee ? (
-              <>
-                <Th>Key 名称</Th>
-                <Th>Key ID</Th>
-                <Th>状态</Th>
-                <Th>用量/限额</Th>
-                <Th style={{ textAlign: "right" }}>操作</Th>
-              </>
-            ) : (
-              <>
-                <Th style={{ width: 40, textAlign: "center" }}>
-                  <input type="checkbox" checked={allSelected} ref={(el) => { if (el) el.indeterminate = !allSelected && someSelected; }} onChange={(e) => onSelectAll(e.target.checked)} style={{ cursor: "pointer" }} />
-                </Th>
-                <Th>Key 名称 / ID</Th>
-                <Th>团队 · 员工</Th>
-                <Th>绑定路由策略</Th>
-                <Th>限速概要</Th>
-                <Th>状态</Th>
-                <Th>质量</Th>
-                <Th>错误率</Th>
-                <Th>最近使用</Th>
-                <Th>当期用量 / 费用</Th>
-                <Th style={{ textAlign: "right" }}>操作</Th>
-              </>
-            )}
+            <Th style={{ width: "30%" }}>Key 名称</Th>
+            <Th style={{ width: "30%" }}>Key ID</Th>
+            <Th style={{ width: "15%" }}>状态</Th>
+            <Th style={{ width: "25%", textAlign: "right" }}>操作</Th>
           </tr>
         </thead>
         <tbody>
           {data.map((row) => (
             <tr key={row.id} style={{ height: 44 }}>
-              {isEmployee ? (
-                <>
-                  <Td>
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{row.name}</span>
-                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>{row.note}</span>
-                    </div>
-                  </Td>
-                  <Td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
-                      <span style={{ fontSize: "var(--text-caption)", fontFamily: "var(--font-mono)", color: "var(--color-body)" }}>{row.mask}</span>
-                      <CopyButton />
-                    </div>
-                  </Td>
-                  <Td><StatusBadge status={row.status} /></Td>
-                  <Td style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-body)" }}>{row.usage}</span>
-                      <div style={{ width: 120, height: 4, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}>
-                        <div style={{ width: `${Math.min(100, parseFloat(row.usage) / 1000)}%`, height: "100%", backgroundColor: "var(--color-success)", borderRadius: "var(--radius-full)" }} />
-                      </div>
-                    </div>
-                  </Td>
-                  <Td style={{ textAlign: "right" }}>
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}>
-                      {row.status === "normal" ? (
-                        <>
-                          <ActionLink onClick={() => onResetKey(row.id)}>重置</ActionLink>
-                          <ActionLink onClick={() => onToggleStatus(row.id)}>停用</ActionLink>
-                        </>
-                      ) : (
-                        <>
-                          <ActionLink onClick={() => onToggleStatus(row.id)}>启用</ActionLink>
-                          <ActionLink dim onClick={() => onDeleteKey(row.id)}>删除</ActionLink>
-                        </>
-                      )}
-                    </div>
-                  </Td>
-                </>
-              ) : (
-                <>
-                  <Td style={{ textAlign: "center" }}>
-                    <input type="checkbox" checked={selectedIds.has(row.id)} onChange={(e) => onSelect(row.id, e.target.checked)} style={{ cursor: "pointer" }} />
-                  </Td>
-                  <Td>
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{row.name}</span>
-                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>ID: {row.mask}</span>
-                    </div>
-                  </Td>
-                  <Td style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)" }}>{row.team} · {row.member}</Td>
-                  <Td><span className="truncate" style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", maxWidth: 110, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={row.routing}>{row.routing}</span></Td>
-                  <Td style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", maxWidth: 200, lineHeight: 1.5 }}>{row.rateLimit}</Td>
-                  <Td><StatusBadge status={row.status} /></Td>
-                  <Td><QualityBadge score={row.qualityScore} /></Td>
-                  <Td><ErrorBadge rate={row.errorRate} /></Td>
-                  <Td style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", whiteSpace: "nowrap" }}>{row.lastUsed}</Td>
-                  <Td>
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontSize: "var(--text-caption)", color: "var(--color-body)" }}>{row.usage}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
-                        <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{row.cost}</span>
-                        {row.costTrend && row.costTrend !== "-" && <span style={{ fontSize: 11, color: row.costTrend.startsWith("+") ? "var(--color-error)" : "var(--color-success)", fontWeight: 500 }}>{row.costTrend}</span>}
-                      </div>
-                    </div>
-                  </Td>
-                  <Td style={{ textAlign: "right" }}>
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-xxs)" }}>
-                      <ActionLink onClick={() => onViewDetail(row)}>查看详情</ActionLink>
-                      <ActionLink>编辑</ActionLink>
-                      <ActionLink>{row.status === "normal" ? "暂停" : "启用"}</ActionLink>
-                      <ActionLink dim>更换</ActionLink>
-                    </div>
-                  </Td>
-                </>
-              )}
+              <Td>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{row.name}</span>
+                  {row.note && <span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginTop: 1 }}>{row.note}</span>}
+                </div>
+              </Td>
+              <Td>
+                <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
+                  <span style={{ fontSize: "var(--text-caption)", fontFamily: "var(--font-mono)", color: "var(--color-body)" }}>{row.mask}</span>
+                  <CopyButton onClick={() => { navigator.clipboard.writeText(row.fullKey); showToast("已复制到剪贴板"); }} />
+                </div>
+              </Td>
+              <Td><StatusBadge status={row.status} /></Td>
+              <Td style={{ textAlign: "right" }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                  <ActionLink onClick={() => { navigator.clipboard.writeText(row.fullKey); showToast("已复制到剪贴板"); }}>复制</ActionLink>
+                  {row.status === "normal" ? (
+                    <>
+                      <ActionLink onClick={() => onResetKey(row.id)}>重置</ActionLink>
+                      <ActionLink onClick={() => onToggleStatus(row.id)}>停用</ActionLink>
+                    </>
+                  ) : (
+                    <>
+                      <ActionLink onClick={() => onToggleStatus(row.id)}>启用</ActionLink>
+                      <ActionLink dim onClick={() => onDeleteKey(row.id)}>删除</ActionLink>
+                    </>
+                  )}
+                </div>
+              </Td>
             </tr>
           ))}
         </tbody>
@@ -989,9 +877,10 @@ function ErrorBadge({ rate }: { rate: string }) {
   );
 }
 
-function CopyButton() {
+function CopyButton({ onClick }: { onClick?: () => void }) {
   return (
     <button
+      onClick={onClick}
       style={{
         width: 24,
         height: 24,

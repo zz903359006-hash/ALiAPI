@@ -2,7 +2,7 @@ export const routeTitleMap: Record<string, string> = {
   "/models": "模型广场",
   "/analytics/usage": "用量分析",
   "/analytics/cost": "费用分析",
-  "/keys": "调用 Key 管理",
+  "/keys": "API Key 管理",
   "/keys/create": "创建调用 Key",
   "/keys/management": "管理 Key 管理",
   "/routing/auto": "Auto 路由中心",

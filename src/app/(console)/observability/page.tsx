@@ -490,7 +490,7 @@ function InsAnalysis() {
         <InsCard title="按补偿类型汇总">
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {COMP_TYPE.map((d, i) => {
-              const colors = ["var(--color-brand-accent)", "#F59E0B", "#7C3AED", "#EC4899", "#10B981", "#6B7280"];
+              const colors = ["#000000", "#333333", "#666666", "#999999", "#CCCCCC", "#E5E7EB"];
               return (
                 <div key={d.type} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)" }}>
                   <span style={{ width: 56, fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-body)" }}>{d.type}</span>
@@ -504,7 +504,7 @@ function InsAnalysis() {
           </div>
           <div style={{ borderTop: "1px solid var(--color-hairline-soft)", paddingTop: "var(--spacing-sm)", marginTop: "var(--spacing-sm)", display: "flex", flexDirection: "column", gap: 4 }}>
             {COMP_TYPE.map((d, i) => {
-              const colors = ["var(--color-brand-accent)", "#F59E0B", "#7C3AED", "#EC4899", "#10B981", "#6B7280"];
+              const colors = ["#000000", "#333333", "#666666", "#999999", "#CCCCCC", "#E5E7EB"];
               return (
                 <div key={d.type} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", fontSize: "var(--text-caption)", cursor: "pointer" }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-brand-accent)"; }}
@@ -522,7 +522,7 @@ function InsAnalysis() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {COMP_MODEL.map((d, i) => {
               const max = COMP_MODEL[0].pct;
-              const colors = ["var(--color-brand-accent)", "#F59E0B", "#7C3AED", "#10B981"];
+              const colors = ["#000000", "#333333", "#666666", "#999999"];
               return (
                 <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", cursor: "pointer" }}>
                   <span style={{ width: 90, fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-body)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={`${d.name} · ${d.vendor}`}>{d.name}</span>
@@ -542,12 +542,12 @@ function InsAnalysis() {
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {COMP_TEAM.map((d, i) => {
             const max = COMP_TEAM[0].pct;
-            const colors = ["var(--color-brand-accent)", "#F59E0B", "#7C3AED", "#10B981"];
-            return (
-              <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", cursor: "pointer" }}>
-                <span style={{ width: 90, fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-body)" }}>{d.name}</span>
-                <div style={{ flex: 1, height: 20, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
-                  <div style={{ width: `${(d.pct / max) * 100}%`, height: "100%", backgroundColor: colors[i], borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", paddingLeft: "var(--spacing-xs)", fontSize: "var(--text-caption)", color: "#fff", fontWeight: 500 }}>{d.amount} · {d.count}次</div>
+              const colors = ["#000000", "#333333", "#666666", "#999999"];
+              return (
+                <div key={d.name} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", cursor: "pointer" }}>
+                  <span style={{ width: 90, fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-body)" }}>{d.name}</span>
+                  <div style={{ flex: 1, height: 20, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-sm)", overflow: "hidden" }}>
+                    <div style={{ width: `${(d.pct / max) * 100}%`, height: "100%", backgroundColor: colors[i], borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", paddingLeft: "var(--spacing-xs)", fontSize: "var(--text-caption)", color: "#fff", fontWeight: 500 }}>{d.amount} · {d.count}次</div>
                 </div>
                 <span style={{ width: 28, textAlign: "right", fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-ink)", flexShrink: 0 }}>{d.pct}%</span>
               </div>
@@ -801,7 +801,7 @@ function HleTab() {
               {[0.25, 0.5, 0.75, 1].map((p) => (
                 <text key={p} x={34} y={24 + 120 * (1 - p)} textAnchor="end" fontSize="10" fill="var(--color-muted)">{(p * 100).toFixed(0)}</text>
               ))}
-              <polyline points="40,68 70,56 100,80 130,44 160,62 190,32 220,50 250,38 280,50 310,44" fill="none" stroke="var(--color-brand-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <polyline points="40,68 70,56 100,80 130,44 160,62 190,32 220,50 250,38 280,50 310,44" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               {["D1","D2","D3","D4","D5","D6","D7","D8","D9","D10"].map((d, i) => (
                 <text key={d} x={40 + i * 30} y={155} textAnchor="middle" fontSize="9" fill="var(--color-muted)">{d}</text>
               ))}

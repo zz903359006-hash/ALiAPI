@@ -127,7 +127,9 @@ export default function KeysPage() {
   };
 
   const deleteKey = (id: string) => {
+    if (!window.confirm(`确认删除 Key「${keys.find((k) => k.id === id)?.name}」？删除后将释放 1 个配额。`)) return;
     setKeys((prev) => prev.filter((k) => k.id !== id));
+    showToast("Key 已删除，配额已释放");
   };
 
   useEffect(() => {
@@ -229,9 +231,8 @@ export default function KeysPage() {
               <span style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)" }}>领取 API Key</span>
             </div>
             <div style={{ padding: "var(--spacing-lg)", display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
-              <div style={{ fontSize: "var(--text-caption)", color: atLimit ? "var(--color-error)" : "var(--color-muted)" }}>
-                已领取 {keyCount} / {MAX_KEYS} 个（公司配额上限）
-                {atLimit && <span style={{ display: "block", marginTop: 2 }}>已达到领取上限，如需更多请联系管理员</span>}
+              <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>
+                已领取 {keyCount} / {MAX_KEYS} 个
               </div>
               <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>Key 名称</span>
@@ -242,11 +243,18 @@ export default function KeysPage() {
                   onBlur={(e) => { if (!atLimit) e.currentTarget.style.borderColor = "var(--color-hairline)"; }}
                   onKeyDown={(e) => { if (e.key === "Enter" && !atLimit) handleClaim(); }} />
               </label>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-sm)" }}>
-                <button onClick={() => setClaimModalOpen(false)} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>取消</button>
-                <button onClick={handleClaim} disabled={atLimit || claimLoading || !keyName.trim()} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: (atLimit || claimLoading || !keyName.trim()) ? "#9CA3AF" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: (atLimit || claimLoading || !keyName.trim()) ? "not-allowed" : "pointer" }}>
-                  {claimLoading ? "领取中..." : "确认领取"}
-                </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+                {atLimit && (
+                  <div style={{ fontSize: "var(--text-body-sm)", color: "var(--color-error)", fontWeight: 500 }}>
+                    已达到凭证数量上限，请先删除闲置的 Key。
+                  </div>
+                )}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--spacing-sm)" }}>
+                  <button onClick={() => setClaimModalOpen(false)} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer" }}>取消</button>
+                  <button onClick={handleClaim} disabled={atLimit || claimLoading || !keyName.trim()} style={{ height: 40, padding: "0 var(--spacing-lg)", fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: (atLimit || claimLoading || !keyName.trim()) ? "#9CA3AF" : "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: (atLimit || claimLoading || !keyName.trim()) ? "not-allowed" : "pointer" }}>
+                    {claimLoading ? "领取中..." : "确认领取"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -294,10 +302,11 @@ function CallKeyTable({
       <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ backgroundColor: "#F9FAFB" }}>
-            <Th style={{ width: "30%" }}>Key 名称</Th>
-            <Th style={{ width: "30%" }}>Key ID</Th>
-            <Th style={{ width: "15%" }}>状态</Th>
-            <Th style={{ width: "25%", textAlign: "right" }}>操作</Th>
+            <Th style={{ width: "26%" }}>Key 名称</Th>
+            <Th style={{ width: "26%" }}>Key ID</Th>
+            <Th style={{ width: "13%" }}>状态</Th>
+            <Th style={{ width: "15%", textAlign: "right" }}>累计消耗</Th>
+            <Th style={{ width: "20%", textAlign: "right" }}>操作</Th>
           </tr>
         </thead>
         <tbody>
@@ -316,20 +325,13 @@ function CallKeyTable({
                 </div>
               </Td>
               <Td><StatusBadge status={row.status} /></Td>
+              <Td style={{ textAlign: "right", fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", fontVariantNumeric: "tabular-nums" }}>{row.cost}</Td>
               <Td style={{ textAlign: "right" }}>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
                   <ActionLink onClick={() => { navigator.clipboard.writeText(row.fullKey); showToast("已复制到剪贴板"); }}>复制</ActionLink>
-                  {row.status === "normal" ? (
-                    <>
-                      <ActionLink onClick={() => onResetKey(row.id)}>重置</ActionLink>
-                      <ActionLink onClick={() => onToggleStatus(row.id)}>停用</ActionLink>
-                    </>
-                  ) : (
-                    <>
-                      <ActionLink onClick={() => onToggleStatus(row.id)}>启用</ActionLink>
-                      <ActionLink dim onClick={() => onDeleteKey(row.id)}>删除</ActionLink>
-                    </>
-                  )}
+                  <ActionLink onClick={() => onResetKey(row.id)}>重置</ActionLink>
+                  <ActionLink onClick={() => onToggleStatus(row.id)}>{row.status === "normal" ? "停用" : "启用"}</ActionLink>
+                  <ActionLink dim onClick={() => onDeleteKey(row.id)}>删除</ActionLink>
                 </div>
               </Td>
             </tr>

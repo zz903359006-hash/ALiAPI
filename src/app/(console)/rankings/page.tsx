@@ -52,12 +52,13 @@ export default function RankingsPage() {
     else providerMap.set(m.provider, { color: m.providerColor, tokens: raw });
   });
   const totalTokens = [...providerMap.values()].reduce((s, p) => s + p.tokens, 0);
-  const providerShares = [...providerMap.entries()].map(([name, data]) => ({
+  const GRAY_PALETTE = ["#000000", "#333333", "#666666", "#999999", "#CCCCCC", "#E5E7EB"];
+  const providerShares = [...providerMap.entries()].map(([name, data], i) => ({
     name,
-    color: data.color,
+    color: GRAY_PALETTE[i] || "#E5E7EB",
     share: data.tokens / totalTokens,
     tokens: data.tokens,
-  })).sort((a, b) => b.share - a.share);
+  })).sort((a, b) => b.share - a.share).map((p, i) => ({ ...p, color: GRAY_PALETTE[i] || "#E5E7EB" }));
 
   let cx = 90, cy = 90, r = 70;
 
@@ -126,7 +127,7 @@ export default function RankingsPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {HLE_TOP10.map((m, i) => (
               <div key={m.nameId} style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)", padding: "4px 0", borderBottom: i < HLE_TOP10.length - 1 ? "1px solid var(--color-hairline-soft)" : "none" }}>
-                <span style={{ width: 20, fontSize: "var(--text-caption)", fontWeight: 600, color: i < 3 ? ["#F59E0B", "#9CA3AF", "#D97706"][i] : "var(--color-muted)", textAlign: "center", flexShrink: 0 }}>{i + 1}</span>
+                <span style={{ width: 20, fontSize: "var(--text-caption)", fontWeight: 600, color: i < 3 ? ["#000000", "#333333", "#666666"][i] : "var(--color-muted)", textAlign: "center", flexShrink: 0 }}>{i + 1}</span>
                 <span style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: m.providerColor, flexShrink: 0 }} />
                 <span style={{ flex: 1, fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.name}</span>
                 <span style={{ fontSize: "var(--text-caption)", fontWeight: 600, color: m.hle >= 0.9 ? "var(--color-success)" : m.hle >= 0.8 ? "var(--color-warning)" : "var(--color-error)" }}>{m.hle.toFixed(2)}</span>
@@ -160,7 +161,7 @@ export default function RankingsPage() {
                   onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                 >
                   <Td2>
-                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", backgroundColor: m.rank <= 3 ? ["#F59E0B", "#9CA3AF", "#D97706"][m.rank - 1] : "var(--color-surface-soft)", color: m.rank <= 3 ? "#fff" : "var(--color-muted)", fontSize: "var(--text-caption)", fontWeight: 600 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", backgroundColor: m.rank <= 3 ? ["#000000", "#333333", "#666666"][m.rank - 1] : "var(--color-surface-soft)", color: m.rank <= 3 ? "#fff" : "var(--color-muted)", fontSize: "var(--text-caption)", fontWeight: 600 }}>
                       {m.rank}
                     </span>
                   </Td2>

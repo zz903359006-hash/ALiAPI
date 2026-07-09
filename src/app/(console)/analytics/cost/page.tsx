@@ -179,7 +179,7 @@ function Kpi({ label, value, sub }: { label: string; value: string; sub?: string
 
 function BarCard({ title, data, onClickLabel }: { title: string; data: { name: string; pct: number; cost?: string }[]; onClickLabel?: (d: any) => void }) {
   const maxPct = Math.max(...data.map((d) => d.pct));
-  const colors = ["var(--color-brand-accent)", "#F59E0B", "#10B981", "#8B5CF6", "#EC4899"];
+  const colors = ["#000000", "#333333", "#666666", "#999999", "#CCCCCC"];
   return (
     <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)" }}>
       <div style={{ padding: "var(--spacing-md) var(--spacing-lg)", borderBottom: "1px solid var(--color-hairline-soft)" }}>
@@ -213,11 +213,11 @@ function TrendCard({ data, labels }: { data: number[]; labels: string[] }) {
       </div>
       <div style={{ padding: "var(--spacing-lg)" }}>
         <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: 180 }}>
-          <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3B82F6" stopOpacity={0.15} /><stop offset="100%" stopColor="#3B82F6" stopOpacity={0} /></linearGradient></defs>
+          <defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#000000" stopOpacity={0.15} /><stop offset="100%" stopColor="#000000" stopOpacity={0} /></linearGradient></defs>
           <path d={area} fill="url(#trendFill)" />
-          <polyline points={pts} fill="none" stroke="#3B82F6" strokeWidth="2" />
+          <polyline points={pts} fill="none" stroke="#000000" strokeWidth="2" />
           {data.map((v, i) => (
-            <circle key={i} cx={(i / (data.length - 1)) * w} cy={h - (v / max) * h * 0.85 - 10} r="3" fill="#3B82F6" />
+            <circle key={i} cx={(i / (data.length - 1)) * w} cy={h - (v / max) * h * 0.85 - 10} r="3" fill="#000000" />
           ))}
         </svg>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4, fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>

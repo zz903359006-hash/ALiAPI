@@ -151,7 +151,7 @@ export default function AdminBillingPage() {
                         <span style={{ width: 80, fontSize: "var(--text-body-sm)", color: "var(--color-ink)", flexShrink: 0 }}>{m.name}</span>
                         <span style={{ width: 80, fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", textAlign: "right", flexShrink: 0 }}>¥{m.amount.toFixed(2)}</span>
                         <div style={{ flex: 1, height: 6, borderRadius: "var(--radius-full)", backgroundColor: "var(--color-surface-card)", overflow: "hidden" }}>
-                          <div style={{ width: `${m.pct}%`, height: "100%", borderRadius: "var(--radius-full)", backgroundColor: ["var(--color-primary)", "var(--color-brand-accent)", "#60A5FA", "#93C5FD"][mi] }} />
+                          <div style={{ width: `${m.pct}%`, height: "100%", borderRadius: "var(--radius-full)", backgroundColor: ["#000000", "#333333", "#666666", "#999999"][mi] }} />
                         </div>
                         <span style={{ width: 36, fontSize: "var(--text-caption)", fontWeight: 600, color: "var(--color-muted)", textAlign: "right", flexShrink: 0 }}>{m.pct}%</span>
                       </div>
@@ -164,7 +164,7 @@ export default function AdminBillingPage() {
                   <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-muted)", marginBottom: "var(--spacing-md)" }}>模型消耗分布</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
                     {bill.models.map((md, mi) => {
-                      const colors = ["var(--color-primary)", "var(--color-brand-accent)", "var(--color-muted-soft)"];
+                      const colors = ["#000000", "#333333", "#666666"];
                       return (
                         <div key={mi}>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>

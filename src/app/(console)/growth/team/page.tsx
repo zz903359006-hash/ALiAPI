@@ -401,7 +401,7 @@ function Kpi({ label, value, sub }: { label: string; value: string; sub?: string
 }
 
 function PctBar({ pct, label }: { pct: number; label: string }) {
-  return <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}><div style={{ width: 56, height: 6, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", backgroundColor: pct > 80 ? "var(--color-error)" : pct > 50 ? "var(--color-warning)" : "var(--color-success)", borderRadius: "var(--radius-full)" }} /></div>{label && <><span style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)" }}>{pct}%</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{label}</span></>}</div>;
+  return <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}><div style={{ width: 56, height: 6, backgroundColor: "var(--color-surface-card)", borderRadius: "var(--radius-full)", overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", backgroundColor: "#000000", borderRadius: "var(--radius-full)" }} /></div>{label && <><span style={{ fontSize: "var(--text-caption)", fontWeight: 500, color: "var(--color-ink)" }}>{pct}%</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>{label}</span></>}</div>;
 }
 
 function Badge2({ status }: { status: MemberStatus }) {

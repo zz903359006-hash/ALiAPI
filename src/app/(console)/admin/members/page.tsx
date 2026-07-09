@@ -114,7 +114,7 @@ export default function MembersPage() {
           <tbody>
             {members.map((m, i) => {
               const p = Math.min(100, (m.consumed / m.budget) * 100);
-              const c = p < 50 ? "var(--color-success)" : p < 80 ? "var(--color-warning)" : "var(--color-error)";
+              const c = "#000000";
               const isEditing = editingKey === m.name;
               return (
                 <tr key={i} style={{ height: 44 }}>
@@ -243,7 +243,7 @@ export default function MembersPage() {
                 <div style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-muted)", marginBottom: "var(--spacing-md)" }}>资金流向 · 模型分布</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
                   {drawerMember.models.map((model, mi) => {
-                    const colors = ["var(--color-primary)", "var(--color-brand-accent)", "var(--color-muted-soft)"];
+                    const colors = ["#000000", "#333333", "#666666"];
                     return (
                       <div key={mi}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>

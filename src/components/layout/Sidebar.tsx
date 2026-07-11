@@ -68,7 +68,6 @@ export default function Sidebar() {
           <img src="/limapilogo.jpg" alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: "cover" }} />
           limAPI
         </span>
-        <span style={{ fontSize: 11, fontWeight: 500, color: "#9CA3AF", backgroundColor: C.sidebarBg, padding: "2px 8px", borderRadius: "4px", lineHeight: "18px" }}>v2.0</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: 10 }}>

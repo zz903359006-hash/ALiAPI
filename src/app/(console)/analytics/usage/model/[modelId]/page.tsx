@@ -267,8 +267,8 @@ export default function ModelDetailPage() {
           mainValue={reliability.failTotal.toLocaleString()}
           mainUnit="次"
           series={[
-            { key: "4xx", label: "4xx", color: "#000", points: reliability.fail4xx },
-            { key: "5xx", label: "5xx", color: "#9ca3af", points: reliability.fail5xx },
+            { key: "4xx", label: "4xx", color: "#000", points: reliability.fail4xx, visible: true },
+            { key: "5xx", label: "5xx", color: "#9ca3af", points: reliability.fail5xx, visible: true },
           ]}
           labels={labels}
         />
@@ -278,9 +278,9 @@ export default function ModelDetailPage() {
           mainUnit="%"
           mainColor="#dc2626"
           series={[
-            { key: "rate", label: "失败率", color: "#000", points: reliability.failRate },
-            { key: "4xx", label: "4xx", color: "#9ca3af", points: reliability.fail4xx.map((v) => +(v / 10).toFixed(2)) },
-            { key: "5xx", label: "5xx", color: "#d1d5db", points: reliability.fail5xx.map((v) => +(v / 10).toFixed(2)) },
+            { key: "rate", label: "失败率", color: "#000", points: reliability.failRate, visible: true },
+            { key: "4xx", label: "4xx", color: "#9ca3af", points: reliability.fail4xx.map((v) => +(v / 10).toFixed(2)), visible: true },
+            { key: "5xx", label: "5xx", color: "#d1d5db", points: reliability.fail5xx.map((v) => +(v / 10).toFixed(2)), visible: true },
           ]}
           labels={labels}
           warn={reliability.failRatePct > 5}
@@ -289,7 +289,7 @@ export default function ModelDetailPage() {
           title="限流错误次数"
           mainValue={reliability.rateLimitTotal.toLocaleString()}
           mainUnit="次"
-          series={[{ key: "limit", label: "429", color: "#000", points: reliability.rateLimit }]}
+          series={[{ key: "limit", label: "429", color: "#000", points: reliability.rateLimit, visible: true }]}
           labels={labels}
           warn={reliability.rateLimitTotal > 50}
           warnHint="建议提升配额或启用重试/排队"
@@ -298,7 +298,7 @@ export default function ModelDetailPage() {
           title="内容安全拦截次数"
           mainValue={reliability.safetyTotal.toLocaleString()}
           mainUnit="次"
-          series={[{ key: "safe", label: "安全拦截", color: "#000", points: reliability.safety }]}
+          series={[{ key: "safe", label: "安全拦截", color: "#000", points: reliability.safety, visible: true }]}
           labels={labels}
         />
       </div>

@@ -344,11 +344,11 @@ function AnalysisView({ unit, tabKey }: { unit: string; tabKey: "cost" | "token"
             <tfoot>
               <tr style={{ borderTop: "2px solid var(--color-hairline)" }}>
                 <Td style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)" }}>合计</Td>
-                <Td></Td>
+                <Td>{"\u00A0"}</Td>
                 <Td right style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", fontVariantNumeric: "tabular-nums" }}>{unit} {usedEnterprise.toFixed(2)}</Td>
                 <Td right style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", fontVariantNumeric: "tabular-nums" }}>{unit} {usedPersonal.toFixed(2)}</Td>
                 <Td right style={{ fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-ink)", fontVariantNumeric: "tabular-nums" }}>{unit} {(usedEnterprise + usedPersonal).toFixed(2)}</Td>
-                <Td></Td>
+                <Td>{"\u00A0"}</Td>
               </tr>
             </tfoot>
           </table>

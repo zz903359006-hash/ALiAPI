@@ -87,17 +87,6 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
           </button>
           )}
 
-          {/* 企业AI一站式服务 */}
-          <button
-            className="flex items-center rounded-md transition-colors"
-            style={{ height: 36, paddingLeft: "var(--spacing-sm)", paddingRight: "var(--spacing-sm)", fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", borderRadius: "var(--radius-md)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-surface-card)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-            onClick={() => router.push("/enterprise")}
-          >
-            企业AI一站式服务
-          </button>
-
           {/* Notifications */}
           <button
             onClick={() => setDrawerOpen((v) => !v)}
@@ -140,7 +129,7 @@ export default function Topbar({ onOpenCommandPalette }: { onOpenCommandPalette?
                   </>
                 )}
                 <div style={{ height: 1, backgroundColor: "var(--color-hairline-soft)", margin: "4px 0" }} />
-                <UserMenuItem muted onClick={() => setUserMenuOpen(false)}>退出登录</UserMenuItem>
+                <UserMenuItem muted onClick={() => { sessionStorage.removeItem("userRole"); sessionStorage.removeItem("currentUser"); setUserMenuOpen(false); router.push("/"); }}>退出登录</UserMenuItem>
               </div>
             )}
           </div>

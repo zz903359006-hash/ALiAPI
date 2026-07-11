@@ -75,7 +75,7 @@ export default function CostAnalyticsPage() {
   const totalCost = filtered.reduce((s, r) => s + parseFloat(r.cost), 0);
 
   const handleExport = () => {
-    const csv = [["时间", "团队/员工", "API Key", "模型", "消耗金额", "扣减资产类型"].join(","),
+    const csv = [["时间", "团队/员工", "Key", "模型", "消耗金额", "扣减资产类型"].join(","),
       ...filtered.map((r) => [r.time, `${r.team}·${r.member}`, r.key, r.model, r.cost, r.assetType].join(",")),
     ].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -141,7 +141,7 @@ export default function CostAnalyticsPage() {
           <table style={{ width: "100%", minWidth: 750, borderCollapse: "collapse", marginTop: "var(--spacing-sm)" }}>
             <thead>
               <tr style={{ backgroundColor: "#F9FAFB" }}>
-                <Th>时间</Th><Th>团队/员工</Th><Th>API Key</Th><Th>模型</Th><Th right>消耗金额</Th><Th>扣减资产类型</Th>
+                <Th>时间</Th><Th>团队/员工</Th><Th>Key</Th><Th>模型</Th><Th right>消耗金额</Th><Th>扣减资产类型</Th>
               </tr>
             </thead>
             <tbody>

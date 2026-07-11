@@ -145,11 +145,11 @@ export default function MembersPage() {
                             autoFocus
                             style={{ width: 80, height: 28, padding: "0 6px", fontSize: "var(--text-caption)", color: "var(--color-ink)", background: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", outline: "none" }}
                             onKeyDown={(e) => {
-                              if (e.key === "Enter" && !topUpExceeds && addAmount) {
-                                setMembers((prev) => prev.map((mm) => mm.name === m.name ? { ...mm, balance: mm.balance + parseFloat(addAmount) } : mm));
+                              if (e.key === "Enter" && addAmount) {
+                                setMembers((prev) => prev.map((mm) => mm.name === m.name ? { ...mm, balance: parseFloat(addAmount) } : mm));
                                 setEditingKey(null);
                                 setAddAmount("");
-                                showToast(`已为 ${m.name} 加额 ¥ ${parseFloat(addAmount).toFixed(2)}`);
+                                showToast(`已将 ${m.name} 余额修改为 ¥ ${parseFloat(addAmount).toFixed(2)}`);
                               }
                             }}
                           />
@@ -157,15 +157,15 @@ export default function MembersPage() {
                         </div>
                         <button
                           onClick={() => {
-                            if (!addAmount || topUpExceeds) return;
-                            setMembers((prev) => prev.map((mm) => mm.name === m.name ? { ...mm, balance: mm.balance + parseFloat(addAmount) } : mm));
+                            if (!addAmount) return;
+                            setMembers((prev) => prev.map((mm) => mm.name === m.name ? { ...mm, balance: parseFloat(addAmount) } : mm));
                             setEditingKey(null);
                             setAddAmount("");
-                            showToast(`已为 ${m.name} 加额 ¥ ${parseFloat(addAmount).toFixed(2)}`);
+                            showToast(`已将 ${m.name} 余额修改为 ¥ ${parseFloat(addAmount).toFixed(2)}`);
                           }}
-                          style={{ width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", cursor: "pointer", color: "var(--color-success)", flexShrink: 0 }}
+                          style={{ fontSize: 11, fontWeight: 500, color: "var(--color-success)", background: "none", border: "none", cursor: "pointer", padding: "1px 4px", lineHeight: "18px" }}
                         >
-                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 8 7 11 12 4" /></svg>
+                          确认
                         </button>
                       </div>
                     ) : (
@@ -177,7 +177,7 @@ export default function MembersPage() {
                           onClick={() => { setEditingKey(m.name); setAddAmount(""); }}
                           style={{ fontSize: 11, fontWeight: 500, color: "var(--color-muted)", background: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: "pointer", padding: "1px 6px", lineHeight: "18px" }}
                         >
-                          + 加额
+                          修改
                         </button>
                       </div>
                     )}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export default function AdminSettingsPage() {
-  const [companyName, setCompanyName] = useState("AliAPI（银弹科技）");
+  const [companyName, setCompanyName] = useState("limAPI（银弹科技）");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [alertEnabled, setAlertEnabled] = useState(true);
   const [invoiceTitle, setInvoiceTitle] = useState("");

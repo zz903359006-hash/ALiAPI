@@ -18,7 +18,7 @@ const MOCK_MODELS = [
 
 function mockStreamResponse(modelName: string, prompt: string): string {
   const seeds = [
-    `当前您正在测试 ${modelName}，回复内容仅供参考。\n\n针对您的提问，以下是分析结果：\n\n1. **核心结论**：根据输入内容，可以归纳出以下几个关键点。\n\n2. **详细分析**：\n   - 首先，需要理解问题的上下文和背景。\n   - 其次，模型会从训练数据中检索相关知识。\n   - 最后，综合推理生成最合理的回答。\n\n3. **建议**：如果需要更精确的结果，建议提供更多上下文或调整参数设置。\n\n\`\`\`python\n# 示例代码\nprint("Hello from ${modelName} via AliAPI")\n\`\`\`\n\n这是一段模拟流式输出，实际部署时将通过 SSE 推送真实响应。`,
+    `当前您正在测试 ${modelName}，回复内容仅供参考。\n\n针对您的提问，以下是分析结果：\n\n1. **核心结论**：根据输入内容，可以归纳出以下几个关键点。\n\n2. **详细分析**：\n   - 首先，需要理解问题的上下文和背景。\n   - 其次，模型会从训练数据中检索相关知识。\n   - 最后，综合推理生成最合理的回答。\n\n3. **建议**：如果需要更精确的结果，建议提供更多上下文或调整参数设置。\n\n\`\`\`python\n# 示例代码\nprint("Hello from ${modelName} via limAPI")\n\`\`\`\n\n这是一段模拟流式输出，实际部署时将通过 SSE 推送真实响应。`,
     `当前您正在测试 ${modelName}，回复内容仅供参考。\n\n根据您的提问，回复如下：\n\n> 这是一个引用的示例格式。\n\n**主要回答：**\n\n在这里展示模型生成的主要内容。您可以继续追问以获取更详细的解答。\n\n| 维度 | 值 |\n|------|-----|\n| 相关性 | 高 |\n| 准确性 | 优 |\n| 完整性 | 中 |\n\n更多详情请继续对话。`,
     `当前您正在测试 ${modelName}，回复内容仅供参考。\n\n好的，我来回答这个问题。\n\n---\n\n**第一步：理解问题**\n首先分析用户输入的意图和关键信息。\n\n**第二步：知识检索**\n在训练数据中查找相关知识点。\n\n**第三步：生成回复**\n\`\`\`\n综合考虑以上分析，得出以下结论。\n\`\`\`\n\n---\n\n*以上内容由 ${modelName} 生成，仅供参考。*`,
   ];
@@ -55,8 +55,8 @@ export default function PlaygroundPage() {
     if (isEmployee) {
       const hasClaimedKey = sessionStorage.getItem("hasClaimedKey");
       if (!hasClaimedKey) {
-        console.log("[Playground Guard] Employee has no enabled API Key. Redirecting to /keys");
-        window.location.href = "/keys?redirectReason=您还未领取 API Key，请先领取凭证后再进行在线测试";
+        console.log("[Playground Guard] Employee has no enabled Key. Redirecting to /keys");
+        window.location.href = "/keys?redirectReason=您还未领取 Key，请先领取凭证后再进行在线测试";
       }
     }
   }, []);

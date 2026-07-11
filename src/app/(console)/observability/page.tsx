@@ -177,7 +177,7 @@ function LogTable({ data, onView }: { data: LogRow[]; onView: (r: LogRow) => voi
       <table style={{ width: "100%", minWidth: 1200, borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ backgroundColor: "#F9FAFB" }}>
-            <Th>时间</Th><Th>团队·员工</Th><Th>API Key</Th><Th>模型</Th><Th>路由</Th><Th>Token (入/出)</Th><Th>供应商</Th><Th>费用</Th><Th>状态</Th><Th>保险</Th><Th right>操作</Th>
+            <Th>时间</Th><Th>团队·员工</Th><Th>Key</Th><Th>模型</Th><Th>路由</Th><Th>Token (入/出)</Th><Th>供应商</Th><Th>费用</Th><Th>状态</Th><Th>保险</Th><Th right>操作</Th>
           </tr>
         </thead>
         <tbody>
@@ -269,7 +269,7 @@ function LogDrawer({ data, onClose, onSwitchTab, isEmployee }: { data: LogRow | 
             <Fld label="请求 ID" value={data.requestId} mono />
             <Fld label="时间" value={data.time} />
             <Fld label="团队/员工" value={`${data.team} · ${data.member}`} />
-            <Fld label="API Key"><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{data.keyName}</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", fontFamily: "var(--font-mono)", marginLeft: 8 }}>{data.keyMask}</span></Fld>
+            <Fld label="Key"><span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{data.keyName}</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", fontFamily: "var(--font-mono)", marginLeft: 8 }}>{data.keyMask}</span></Fld>
             <Fld label="模型" value={data.model} />
             <Fld label="供应商" value={data.vendor} />
             <Fld label="账单类型"><span style={{ display: "inline-flex", alignItems: "center", height: 22, paddingLeft: "var(--spacing-xs)", paddingRight: "var(--spacing-xs)", fontSize: "var(--text-caption)", fontWeight: 500, color: data.billType === "付费" ? "#2563EB" : "#059669", backgroundColor: data.billType === "付费" ? "#EFF6FF" : "#ECFDF5", borderRadius: "var(--radius-sm)" }}>{data.billType}</span></Fld>

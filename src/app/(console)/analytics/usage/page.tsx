@@ -82,7 +82,7 @@ export default function UsageAnalyticsPage() {
 
   const handleExport = () => {
     const csv = [
-      ["时间", "API Key", "模型", "输入 Token", "输出 Token", "预估费用 (¥)", "结果状态"].join(","),
+      ["时间", "Key", "模型", "输入 Token", "输出 Token", "预估费用 (¥)", "结果状态"].join(","),
       ...filtered.map((r) => [r.time, r.keyId, r.model, r.inputTokens, r.outputTokens, r.cost.toFixed(2), r.status].join(",")),
     ].join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
@@ -132,7 +132,7 @@ export default function UsageAnalyticsPage() {
           <table style={{ width: "100%", minWidth: 800, borderCollapse: "collapse", marginTop: "var(--spacing-sm)" }}>
             <thead>
               <tr style={{ backgroundColor: "#F9FAFB" }}>
-                <Th>时间</Th><Th>API Key</Th><Th>模型</Th><Th right>输入 Token</Th><Th right>输出 Token</Th><Th right>预估费用 (¥)</Th><Th>结果状态</Th>
+                <Th>时间</Th><Th>Key</Th><Th>模型</Th><Th right>输入 Token</Th><Th right>输出 Token</Th><Th right>预估费用 (¥)</Th><Th>结果状态</Th>
               </tr>
             </thead>
             <tbody>

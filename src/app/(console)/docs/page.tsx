@@ -30,11 +30,11 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          欢迎使用 AliAPI 网关平台。本指南将帮助您在 5 分钟内完成首次 API 调用。
+          欢迎使用 limAPI 网关平台。本指南将帮助您在 5 分钟内完成首次 API 调用。
         </p>
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-sm)", fontFamily: "var(--font-display)" }}>前置条件</h3>
         <ul style={{ marginBottom: "var(--spacing-lg)", paddingLeft: 20, fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 2 }}>
-          <li>已注册 AliAPI 账户</li>
+          <li>已注册 limAPI 账户</li>
           <li>账户余额大于 0</li>
           <li>已创建有效的调用 Key</li>
         </ul>
@@ -47,12 +47,12 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          AliAPI 使用 API Key 进行身份鉴权。所有请求必须在 HTTP Header 中携带有效的 API Key。
+          limAPI 使用 Key 进行身份鉴权。所有请求必须在 HTTP Header 中携带有效的 Key。
         </p>
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-sm)", fontFamily: "var(--font-display)" }}>请求头格式</h3>
         <CodeBlock code={`Authorization: Bearer sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`} />
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", margin: "var(--spacing-lg) 0 var(--spacing-sm)", fontFamily: "var(--font-display)" }}>Python 示例</h3>
-        <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    api_key="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",\n    base_url="https://api.AliAPI.dev/v1"\n)\n\nresponse = client.chat.completions.create(\n    model="deepseek-v3",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`} />
+        <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    api_key="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",\n    base_url="https://api.limAPI.dev/v1"\n)\n\nresponse = client.chat.completions.create(\n    model="deepseek-v3",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`} />
       </div>
     ),
   },
@@ -62,7 +62,7 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          AliAPI 提供完全兼容 OpenAI SDK 的接口，您只需修改 base_url 即可无缝切换。
+          limAPI 提供完全兼容 OpenAI SDK 的接口，您只需修改 base_url 即可无缝切换。
         </p>
         <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-sm)", fontFamily: "var(--font-display)" }}>支持的端点</h3>
         <DocTable
@@ -102,7 +102,7 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          AliAPI 平台聚合了多种主流大语言模型，以下是当前支持的模型列表。
+          limAPI 平台聚合了多种主流大语言模型，以下是当前支持的模型列表。
         </p>
         <DocTable
           headers={["模型名称", "提供商", "输入价格", "输出价格", "上下文"]}
@@ -122,12 +122,12 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <p style={{ marginBottom: "var(--spacing-lg)", lineHeight: 1.8 }}>
-          调用 AliAPI 接口时可能返回以下错误码，请根据对应说明进行排查。
+          调用 limAPI 接口时可能返回以下错误码，请根据对应说明进行排查。
         </p>
         <DocTable
           headers={["错误码", "HTTP 状态", "说明", "处理建议"]}
           rows={[
-            ["401", "Unauthorized", "API Key 无效或已过期", "检查请求头 Authorization 是否正确"],
+            ["401", "Unauthorized", "Key 无效或已过期", "检查请求头 Authorization 是否正确"],
             ["402", "Payment Required", "账户余额不足", "前往计费中心充值"],
             ["429", "Too Many Requests", "请求频率超限", "降低调用频率或升级套餐"],
             ["500", "Internal Error", "模型服务内部错误", "稍后重试，如持续失败请联系客服"],
@@ -143,8 +143,8 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
     body: (
       <div>
         <div style={{ marginBottom: "var(--spacing-lg)" }}>
-          <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-xs)", fontFamily: "var(--font-display)" }}>如何获取 API Key？</h3>
-          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.8 }}>登录控制台后，在「调用 Key 管理」页面创建新的 API Key，支持设置路由策略和风控限额。</p>
+          <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-xs)", fontFamily: "var(--font-display)" }}>如何获取 Key？</h3>
+          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.8 }}>登录控制台后，在「调用 Key 管理」页面创建新的 Key，支持设置路由策略和风控限额。</p>
         </div>
         <div style={{ marginBottom: "var(--spacing-lg)" }}>
           <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-xs)", fontFamily: "var(--font-display)" }}>余额不足怎么办？</h3>
@@ -152,7 +152,7 @@ const DOC_CONTENT: Record<string, { title: string; breadcrumb: string; body: Rea
         </div>
         <div style={{ marginBottom: "var(--spacing-lg)" }}>
           <h3 style={{ fontSize: "var(--text-title-sm)", fontWeight: 600, color: "var(--color-ink)", marginBottom: "var(--spacing-xs)", fontFamily: "var(--font-display)" }}>如何选择模型？</h3>
-          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.8 }}>可在「模型广场」浏览所有可用模型及其定价。您也可以在创建 API Key 时配置 Auto 路由策略，系统会根据策略自动选择最优模型。</p>
+          <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-body)", lineHeight: 1.8 }}>可在「模型广场」浏览所有可用模型及其定价。您也可以在创建 Key 时配置 Auto 路由策略，系统会根据策略自动选择最优模型。</p>
         </div>
       </div>
     ),

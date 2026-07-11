@@ -216,7 +216,7 @@ export default function AdminBillingPage() {
               </div>
               <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>发票抬头</span>
-                <input value="AliAPI（银弹科技）" readOnly style={{ height: 40, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-md)", color: "var(--color-muted)", background: "var(--color-surface-soft)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", outline: "none", width: "100%", cursor: "not-allowed" }} />
+                <input value="limAPI（银弹科技）" readOnly style={{ height: 40, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-md)", color: "var(--color-muted)", background: "var(--color-surface-soft)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", outline: "none", width: "100%", cursor: "not-allowed" }} />
               </label>
               <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>税号</span>

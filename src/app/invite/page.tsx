@@ -52,7 +52,7 @@ export default function InvitePage() {
             {view === "already-joined" ? "您已加入该组织" : "加入 某某科技有限公司"}
           </h1>
           <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", lineHeight: 1.6 }}>
-            张三（管理员）邀请您加入 AliAPI 平台团队
+            张三（管理员）邀请您加入 limAPI 平台团队
           </p>
         </div>
 

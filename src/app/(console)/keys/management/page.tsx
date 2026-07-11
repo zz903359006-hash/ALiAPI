@@ -108,7 +108,7 @@ export default function MgmtKeysPage() {
             color: "var(--color-muted)",
           }}
         >
-          配置仅用于访问 AliAPI 管理接口的密钥，不参与业务调用计费，适合运维、财务和系统集成场景。
+          配置仅用于访问 limAPI 管理接口的密钥，不参与业务调用计费，适合运维、财务和系统集成场景。
         </p>
       </div>
 

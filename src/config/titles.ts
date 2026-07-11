@@ -2,7 +2,7 @@ export const routeTitleMap: Record<string, string> = {
   "/models": "模型广场",
   "/analytics/usage": "用量分析",
   "/analytics/cost": "费用分析",
-  "/keys": "API Key 管理",
+  "/keys": "Key 管理",
   "/keys/create": "创建调用 Key",
   "/keys/management": "管理 Key 管理",
   "/routing/auto": "Auto 路由中心",
@@ -16,13 +16,12 @@ export const routeTitleMap: Record<string, string> = {
   "/growth/team": "团队 & 员工管理",
   "/settings": "设置",
   "/settings/security": "安全与审计中心",
-   "/notifications": "通知中心",
-   "/enterprise": "企业AI一站式服务",
-   "/admin/members": "成员",
-   "/admin/billing": "财务",
-   "/admin/settings": "设置",
- };
+  "/notifications": "通知中心",
+  "/admin/members": "成员",
+  "/admin/billing": "财务",
+  "/admin/settings": "设置",
+};
 
 export function getRouteTitle(pathname: string): string {
-  return routeTitleMap[pathname] ?? "AliAPI 控制台";
+  return routeTitleMap[pathname] ?? "limAPI 控制台";
 }

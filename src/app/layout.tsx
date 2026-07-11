@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import "./landing.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,8 +11,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AliAPI — 网关平台控制台",
-  description: "AliAPI 网关平台用户端控制台",
+  title: "limAPI — 一个 API，连接每一种 AI",
+  description: "统一接入多种 AI 模型，集中管理 Key、团队额度、调用用量与账单。",
 };
 
 export default function RootLayout({

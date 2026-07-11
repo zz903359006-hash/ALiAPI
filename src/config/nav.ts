@@ -15,7 +15,7 @@ export type NavItem = {
  */
 export const navGroups: NavItem[][] = [
   [
-    { key: "api-keys", label: "API Key 管理", path: "/keys" },
+    { key: "api-keys", label: "Key 管理", path: "/keys" },
     { key: "analytics-usage", label: "用量分析", path: "/analytics/usage" },
     { key: "playground", label: "在线测试", path: "/playground" },
     { key: "models", label: "模型广场", path: "/models" },

@@ -12,7 +12,7 @@ interface NotificationItem {
 
 const fakeNotifications: NotificationItem[] = [
   { id: 1, title: "额度不足提醒", body: "您的 API 调用额度已使用 85%，请及时充值。", time: "10 分钟前", read: false },
-  { id: 2, title: "新版本发布", body: "AliAPI v2.3.0 已发布，新增 Auto 路由权重配置功能。", time: "1 小时前", read: false },
+  { id: 2, title: "新版本发布", body: "limAPI v2.3.0 已发布，新增 Auto 路由权重配置功能。", time: "1 小时前", read: false },
   { id: 3, title: "Key 即将过期", body: "调用 Key sk-xxx...abc 将在 7 天后过期，请及时续期。", time: "3 小时前", read: true },
   { id: 4, title: "团队邀请", body: "zhang@example.com 已接受您的团队邀请。", time: "昨天", read: true },
   { id: 5, title: "账单生成", body: "2026 年 5 月账单已生成，请前往查看。", time: "2 天前", read: true },

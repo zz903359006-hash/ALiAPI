@@ -5,7 +5,7 @@ import { getRouteTitle } from "@/config/titles";
 import Tabs from "@/components/layout/Tabs";
 
 interface TeamNode { id: string; name: string; type: "dept" | "project"; children?: TeamNode[]; memberCount: number; quota: string; used: string; dailyLimit: string; monthlyLimit: string; }
-const TREE: TeamNode = { id: "root", name: "AliAPI", type: "dept", memberCount: 48, quota: "¥ 50,000", used: "¥ 17,500", dailyLimit: "¥ 500", monthlyLimit: "¥ 5,000",
+const TREE: TeamNode = { id: "root", name: "limAPI", type: "dept", memberCount: 48, quota: "¥ 50,000", used: "¥ 17,500", dailyLimit: "¥ 500", monthlyLimit: "¥ 5,000",
   children: [
     { id: "ai", name: "AI 平台部", type: "dept", memberCount: 15, quota: "¥ 15,000", used: "¥ 5,400", dailyLimit: "¥ 200", monthlyLimit: "¥ 2,000", children: [{ id: "prj-ml", name: "模型平台项目", type: "project", memberCount: 8, quota: "¥ 8,000", used: "¥ 3,800", dailyLimit: "¥ 100", monthlyLimit: "¥ 1,200" }] },
     { id: "cs", name: "客服中心", type: "dept", memberCount: 10, quota: "¥ 8,000", used: "¥ 2,100", dailyLimit: "¥ 150", monthlyLimit: "¥ 1,500" },
@@ -315,7 +315,7 @@ function StructureTab({ node, onSelect }: { node: TeamNode; onSelect: (n: TeamNo
           <table style={{ width: "100%", minWidth: 500, borderCollapse: "collapse" }}>
             <thead><tr style={{ backgroundColor: "#F9FAFB" }}><Th2>成员</Th2><Th2>角色</Th2><Th2>日限额</Th2><Th2>月限额</Th2><Th2>已用</Th2><Th2>状态</Th2></tr></thead>
             <tbody>
-              {initialMembers.filter((m) => m.team === node.name || node.name === "AliAPI").map((m) => (
+              {initialMembers.filter((m) => m.team === node.name || node.name === "limAPI").map((m) => (
                 <tr key={m.id} style={{ height: 44 }}>
                   <Td2><div><span style={{ fontWeight: 500, color: "var(--color-ink)" }}>{m.name}</span><span style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", marginLeft: 8 }}>{m.email}</span></div></Td2>
                   <Td2 style={{ color: "var(--color-body)" }}>{m.role}</Td2>

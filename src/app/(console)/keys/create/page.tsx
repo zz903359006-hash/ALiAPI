@@ -108,15 +108,15 @@ export default function CreateKeyPage() {
   const codeTabs: TabItem[] = [
     {
       key: "python", label: "Python",
-      content: <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.AliAPI.dev/v1",\n    api_key="${generatedKey}"\n)\n\nresponse = client.chat.completions.create(\n    model="gpt-4o",\n    messages=[{"role": "user", "content": "Hello world"}]\n)\nprint(response.choices[0].message.content)`} />,
+      content: <CodeBlock code={`import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.limAPI.dev/v1",\n    api_key="${generatedKey}"\n)\n\nresponse = client.chat.completions.create(\n    model="gpt-4o",\n    messages=[{"role": "user", "content": "Hello world"}]\n)\nprint(response.choices[0].message.content)`} />,
     },
     {
       key: "curl", label: "cURL",
-      content: <CodeBlock code={`curl https://api.AliAPI.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${generatedKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "gpt-4o",\n    "messages": [{"role": "user", "content": "Hello world"}]\n  }'`} />,
+      content: <CodeBlock code={`curl https://api.limAPI.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${generatedKey}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "gpt-4o",\n    "messages": [{"role": "user", "content": "Hello world"}]\n  }'`} />,
     },
     {
       key: "node", label: "Node.js",
-      content: <CodeBlock code={`import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.AliAPI.dev/v1",\n  apiKey: "${generatedKey}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "gpt-4o",\n  messages: [{ role: "user", content: "Hello world" }],\n});\n\nconsole.log(response.choices[0].message.content);`} />,
+      content: <CodeBlock code={`import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.limAPI.dev/v1",\n  apiKey: "${generatedKey}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "gpt-4o",\n  messages: [{ role: "user", content: "Hello world" }],\n});\n\nconsole.log(response.choices[0].message.content);`} />,
     },
   ];
 
@@ -185,7 +185,7 @@ function Step1({ form, update }: { form: FormData; update: (p: Partial<FormData>
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-lg)" }}>
       <h2 style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)", margin: 0 }}>基本信息</h2>
-      <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: 0 }}>为你的 API Key 设置名称和用途，便于后续管理。</p>
+      <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", margin: 0 }}>为你的 Key 设置名称和用途，便于后续管理。</p>
 
       <FormField label="Key 名称" required>
         <input

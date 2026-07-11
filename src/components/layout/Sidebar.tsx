@@ -49,7 +49,8 @@ function menuIcon(key: string): ReactNode {
 export default function Sidebar() {
   const pathname = usePathname();
 
-const EMPLOYEE_KEYS = ["api-keys", "analytics-usage", "playground", "models"];
+  const EMPLOYEE_KEYS = ["api-keys", "analytics-usage", "playground", "models"];
+  const ADMIN_KEYS = ["admin-members", "admin-billing", "admin-settings"];
 
   const isActive = (item: NavItem): boolean => {
     if (item.path && pathname === item.path) return true;
@@ -58,31 +59,26 @@ const EMPLOYEE_KEYS = ["api-keys", "analytics-usage", "playground", "models"];
 
   const visibleItems = isEmployee
     ? navGroups.flat().filter((item) => EMPLOYEE_KEYS.includes(item.key))
-    : navGroups[0];
+    : navGroups.flat().filter((item) => ADMIN_KEYS.includes(item.key));
 
   return (
     <aside className="fixed left-0 top-0 h-full flex flex-col z-40" style={{ width: SIDEBAR_WIDTH, backgroundColor: C.sidebarBg, borderRight: `1px solid ${C.border}` }}>
       <div className="flex items-center justify-between shrink-0" style={{ height: HEADER_HEIGHT, backgroundColor: C.headerBg, borderBottom: `1px solid ${C.borderLight}`, paddingLeft: 16, paddingRight: 12 }}>
-        <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.3px", color: "#111827", fontFamily: "var(--font-display)" }}>AliAPI</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 17, fontWeight: 700, letterSpacing: "-0.3px", color: "#111827", fontFamily: "var(--font-display)" }}>
+          <img src="/limapilogo.jpg" alt="" style={{ width: 24, height: 24, borderRadius: 6, objectFit: "cover" }} />
+          limAPI
+        </span>
         <span style={{ fontSize: 11, fontWeight: 500, color: "#9CA3AF", backgroundColor: C.sidebarBg, padding: "2px 8px", borderRadius: "4px", lineHeight: "18px" }}>v2.0</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: 10 }}>
+        {!isEmployee && (
+          <div style={{ fontSize: 11, fontWeight: 400, color: "var(--color-muted-soft)", padding: "0 var(--spacing-lg) var(--spacing-xs)", marginBottom: 4 }}>管理员</div>
+        )}
         {visibleItems.map((item) => {
           const active = isActive(item);
           return <NavItemLink key={item.key} item={item} active={active} />;
         })}
-
-        {!isEmployee && (
-          <>
-            <div style={{ height: 1, backgroundColor: C.borderLight, margin: "var(--spacing-sm) var(--spacing-md)" }} />
-            <div style={{ fontSize: 11, fontWeight: 400, color: "var(--color-muted-soft)", padding: "var(--spacing-xs) var(--spacing-lg) 0", marginBottom: 2 }}>管理员</div>
-            {navGroups[1].map((item) => {
-              const active = isActive(item);
-              return <NavItemLink key={item.key} item={item} active={active} />;
-            })}
-          </>
-        )}
       </nav>
     </aside>
   );

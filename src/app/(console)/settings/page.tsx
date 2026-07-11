@@ -181,7 +181,7 @@ export default function SettingsPage() {
       <div style={{ marginTop: "var(--spacing-lg)" }}>
         <Card title="自有密钥 (BYOK)">
           <p style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginBottom: "var(--spacing-lg)", lineHeight: 1.6 }}>
-            添加你的 OpenAI / Anthropic / Google / DeepSeek 等厂商的 API Key。调用时将优先使用你的账户密钥，系统会在密钥不可用时自动回退至平台余额。
+            添加你的 OpenAI / Anthropic / Google / DeepSeek 等厂商的 Key。调用时将优先使用你的账户密钥，系统会在密钥不可用时自动回退至平台余额。
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
             {byokKeys.map((k: any) => (
@@ -214,7 +214,7 @@ export default function SettingsPage() {
                   {["OpenAI", "Anthropic", "Google", "DeepSeek", "阿里云"].map((o) => <option key={o}>{o}</option>)}
                 </select>
               </Field>
-              <Field label="API Key">
+              <Field label="Key">
                 <input value={addKey} onChange={(e) => setAddKey(e.target.value)} placeholder="sk-..." style={inpS} />
               </Field>
             </div>

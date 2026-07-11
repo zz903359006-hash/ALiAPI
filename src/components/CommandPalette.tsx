@@ -71,7 +71,7 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
       type: "model" as const,
       action: () => { router.push(`/models?search=${encodeURIComponent(m.label)}`); onClose(); },
     })),
-    { id: "action-create-key", label: "创建调用 Key", description: "快速创建新的 API Key", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>, type: "action" as const, action: () => { router.push("/keys/create"); onClose(); } },
+    { id: "action-create-key", label: "创建调用 Key", description: "快速创建新的 Key", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>, type: "action" as const, action: () => { router.push("/keys/create"); onClose(); } },
     { id: "action-recharge", label: "前往充值", description: "为账户充值", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" /><line x1="5" y1="15" x2="9" y2="15" /></svg>, type: "action" as const, action: () => { router.push("/billing/credits"); onClose(); } },
     { id: "action-docs", label: "查看文档", description: "开发者文档中心", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>, type: "action" as const, action: () => { router.push("/docs"); onClose(); } },
   ];

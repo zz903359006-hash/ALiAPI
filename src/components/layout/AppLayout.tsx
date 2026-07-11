@@ -5,11 +5,30 @@ import Topbar from "./Topbar";
 import Breadcrumb from "./Breadcrumb";
 import CommandPalette from "@/components/CommandPalette";
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 const SIDEBAR_WIDTH = 216;
 
+const ADMIN_ROUTES = ["/admin/members", "/admin/billing", "/admin/settings"];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    const role = sessionStorage.getItem("userRole");
+    if (!role) {
+      router.replace("/login");
+      return;
+    }
+    if (role === "Employee" && ADMIN_ROUTES.some((r) => pathname.startsWith(r))) {
+      router.replace("/dashboard");
+      return;
+    }
+    setAuthed(true);
+  }, [router, pathname]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -24,6 +43,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, []);
+
+  if (!authed) return null;
 
   return (
     <div

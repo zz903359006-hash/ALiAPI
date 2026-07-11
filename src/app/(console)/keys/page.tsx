@@ -27,6 +27,8 @@ interface CallKey {
   costTrend: string;
 }
 
+const USER_BALANCE = 374.50;
+
 const MOCK_KEYS: CallKey[] = [
   {
     id: "sk-4a7b9c8f",
@@ -194,6 +196,7 @@ export default function KeysPage() {
             data={keys}
             selectedIds={selectedIds}
             isEmployee={isEmployee}
+            balance={USER_BALANCE}
             onSelect={(id, checked) => {
               setSelectedIds((prev) => {
                 const next = new Set(prev);
@@ -228,7 +231,7 @@ export default function KeysPage() {
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,0,0,0.4)" }} onClick={() => setClaimModalOpen(false)}>
           <div style={{ width: 420, maxWidth: "90vw", backgroundColor: "var(--color-canvas)", borderRadius: "var(--radius-lg)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)", overflow: "hidden" }} onClick={(e) => e.stopPropagation()}>
             <div style={{ padding: "var(--spacing-lg)", borderBottom: "1px solid var(--color-hairline-soft)" }}>
-              <span style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)" }}>领取 API Key</span>
+              <span style={{ fontSize: "var(--text-title-lg)", fontWeight: 600, color: "var(--color-ink)" }}>领取 Key</span>
             </div>
             <div style={{ padding: "var(--spacing-lg)", display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
               <div style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)" }}>
@@ -271,6 +274,7 @@ function CallKeyTable({
   data,
   selectedIds,
   isEmployee,
+  balance,
   onSelect,
   onSelectAll,
   onViewDetail,
@@ -282,6 +286,7 @@ function CallKeyTable({
   data: CallKey[];
   selectedIds: Set<string>;
   isEmployee?: boolean;
+  balance?: number;
   onSelect: (id: string, checked: boolean) => void;
   onSelectAll: (checked: boolean) => void;
   onViewDetail: (key: CallKey) => void;
@@ -294,8 +299,42 @@ function CallKeyTable({
     return <EmptyState isEmployee={isEmployee} />;
   }
 
-  const allSelected = data.length > 0 && data.every((k) => selectedIds.has(k.id));
-  const someSelected = data.some((k) => selectedIds.has(k.id));
+  if (isEmployee) {
+    return (
+      <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)" }}>
+        <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ backgroundColor: "#F9FAFB" }}>
+              <Th style={{ width: "35%" }}>Key 名称</Th>
+              <Th style={{ width: "40%" }}>Key ID</Th>
+              <Th style={{ width: "25%", textAlign: "right" }}>操作</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.id} style={{ height: 44 }}>
+                <Td>
+                  <span style={{ fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)" }}>{row.name}</span>
+                </Td>
+                <Td>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-xs)" }}>
+                    <span style={{ fontSize: "var(--text-caption)", fontFamily: "var(--font-mono)", color: "var(--color-body)" }}>{row.mask}</span>
+                    <CopyButton onClick={() => { navigator.clipboard.writeText(row.fullKey); showToast("已复制到剪贴板"); }} />
+                  </div>
+                </Td>
+                <Td style={{ textAlign: "right" }}>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+                    <CopyButton onClick={() => { navigator.clipboard.writeText(row.fullKey); showToast("已复制到剪贴板"); }} />
+                    <ActionLink dim onClick={() => onDeleteKey(row.id)} style={{ color: "var(--color-error)" }}>删除</ActionLink>
+                  </div>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-lg)" }}>
@@ -680,7 +719,7 @@ function EmptyState({ isEmployee }: { isEmployee?: boolean }) {
         {isEmployee ? "暂无已领取的 API 凭证" : "暂未创建调用 Key"}
       </span>
       <span style={{ fontSize: "var(--text-body-sm)", color: "var(--color-muted)", marginBottom: "var(--spacing-lg)" }}>
-        {isEmployee ? "请先在上方领取您的 API Key 以开始使用。" : "创建第一个调用 Key，开始通过 AliAPI 接入模型调用。"}
+        {isEmployee ? "请先在上方领取您的 Key 以开始使用。" : "创建第一个调用 Key，开始通过 limAPI 接入模型调用。"}
       </span>
       {!isEmployee && <button style={primaryBtnStyle} onClick={() => window.location.href = "/keys/create"}>新建调用 Key</button>}
     </div>
@@ -908,14 +947,14 @@ function CopyButton({ onClick }: { onClick?: () => void }) {
   );
 }
 
-function ActionLink({ children, dim, onClick }: { children: React.ReactNode; dim?: boolean; onClick?: () => void }) {
+function ActionLink({ children, dim, onClick, style }: { children: React.ReactNode; dim?: boolean; onClick?: () => void; style?: React.CSSProperties }) {
   return (
     <button
       onClick={onClick}
       style={{
         fontSize: "var(--text-body-sm)",
         fontWeight: 500,
-        color: dim ? "var(--color-muted)" : "var(--color-ink)",
+        color: dim ? "var(--color-muted)" : "var(--color-ink)", ...style,
         backgroundColor: "transparent",
         border: "none",
         cursor: "pointer",

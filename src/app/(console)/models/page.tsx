@@ -421,7 +421,7 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
               <button onClick={() => setQuickKeyModalOpen(true)} style={{ height: 36, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-sm)", fontWeight: 500, color: "var(--color-ink)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>+ 新建</button>
             </div>
           </div></DSec>
-          <DSec t="快速开始"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>复制以下代码，将 base_url 和 authorization 替换为你创建的 AliAPI Key 即可发起调用。</p><QuickCode modelId={data.nameId} apiKey={injectedKey} /></DSec>
+          <DSec t="快速开始"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>复制以下代码，将 base_url 和 authorization 替换为你创建的 limKey 即可发起调用。</p><QuickCode modelId={data.nameId} apiKey={injectedKey} /></DSec>
           <DSec t="在线调试 (Playground)"><p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>直接测试模型效果，响应流式输出。</p><Playground modelName={data.name} apiKeyId={pgKeyId} setApiKeyId={setPgKeyId} prompt={pgPrompt} setPrompt={setPgPrompt} response={pgResponse} setResponse={setPgResponse} streaming={pgStreaming} setStreaming={setPgStreaming} temperature={pgTemperature} setTemperature={setPgTemperature} maxTokens={pgMaxTokens} setMaxTokens={setPgMaxTokens} popoverOpen={pgPopoverOpen} setPopoverOpen={setPgPopoverOpen} stats={pgStats} setStats={setPgStats} showToast={showToast} /></DSec>
         </div>
         <div style={{ padding: "var(--spacing-md) var(--spacing-lg)", borderTop: "1px solid var(--color-hairline)", backgroundColor: "var(--color-canvas)" }}>
@@ -431,7 +431,7 @@ function ModelDrawer({ data, onClose, preferredModels, blacklistedModels, onTogg
               {sessionStorage.getItem("hasClaimedKey") ? (
                 <button onClick={() => { onClose(); window.location.href = `/playground?model=${data.nameId}`; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>在线测试</button>
               ) : (
-                <button onClick={() => { onClose(); window.location.href = "/keys"; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>前往领取 API Key</button>
+                <button onClick={() => { onClose(); window.location.href = "/keys"; }} style={{ flex: 1, height: 40, fontSize: "var(--text-button)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: "var(--color-primary)", border: "none", borderRadius: "var(--radius-md)", cursor: "pointer", whiteSpace: "nowrap" }}>前往领取 Key</button>
               )}
             </div>
           ) : (
@@ -467,13 +467,13 @@ function QuickCode({ modelId, apiKey }: { modelId: string; apiKey?: string }) {
   const [protocol, setProtocol] = useState("openai");
   const [langTab, setLangTab] = useState("curl");
 
-  const openaiCurl = `curl https://api.AliAPI.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${keyDisplay}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
-  const openaiPython = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.AliAPI.dev/v1",\n    api_key="${keyDisplay}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
-  const openaiNode = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.AliAPI.dev/v1",\n  apiKey: "${keyDisplay}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
+  const openaiCurl = `curl https://api.limAPI.dev/v1/chat/completions \\\n  -H "Authorization: Bearer ${keyDisplay}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const openaiPython = `import openai\n\nclient = openai.OpenAI(\n    base_url="https://api.limAPI.dev/v1",\n    api_key="${keyDisplay}"\n)\n\nresponse = client.chat.completions.create(\n    model="${modelId}",\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.choices[0].message.content)`;
+  const openaiNode = `import OpenAI from "openai";\n\nconst client = new OpenAI({\n  baseURL: "https://api.limAPI.dev/v1",\n  apiKey: "${keyDisplay}",\n});\n\nconst response = await client.chat.completions.create({\n  model: "${modelId}",\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.choices[0].message.content);`;
 
-  const anthropicCurl = `curl https://api.AliAPI.dev/anthropic/v1/messages \\\n  -H "x-api-key: ${keyDisplay}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "max_tokens": 1024,\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
-  const anthropicPython = `import anthropic\n\nclient = anthropic.Anthropic(\n    api_key="${keyDisplay}",\n    base_url="https://api.AliAPI.dev/anthropic"\n)\n\nresponse = client.messages.create(\n    model="${modelId}",\n    max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.content[0].text)`;
-  const anthropicNode = `import Anthropic from "@anthropic-ai/sdk";\n\nconst client = new Anthropic({\n  apiKey: "${keyDisplay}",\n  baseURL: "https://api.AliAPI.dev/anthropic",\n});\n\nconst response = await client.messages.create({\n  model: "${modelId}",\n  max_tokens: 1024,\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.content[0].text);`;
+  const anthropicCurl = `curl https://api.limAPI.dev/anthropic/v1/messages \\\n  -H "x-api-key: ${keyDisplay}" \\\n  -H "anthropic-version: 2023-06-01" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "model": "${modelId}",\n    "max_tokens": 1024,\n    "messages": [{"role": "user", "content": "Hello"}]\n  }'`;
+  const anthropicPython = `import anthropic\n\nclient = anthropic.Anthropic(\n    api_key="${keyDisplay}",\n    base_url="https://api.limAPI.dev/anthropic"\n)\n\nresponse = client.messages.create(\n    model="${modelId}",\n    max_tokens=1024,\n    messages=[{"role": "user", "content": "Hello"}]\n)\nprint(response.content[0].text)`;
+  const anthropicNode = `import Anthropic from "@anthropic-ai/sdk";\n\nconst client = new Anthropic({\n  apiKey: "${keyDisplay}",\n  baseURL: "https://api.limAPI.dev/anthropic",\n});\n\nconst response = await client.messages.create({\n  model: "${modelId}",\n  max_tokens: 1024,\n  messages: [{ role: "user", content: "Hello" }],\n});\n\nconsole.log(response.content[0].text);`;
 
   const isAnthropic = protocol === "anthropic";
   const code = isAnthropic ? anthropicCurl : openaiCurl;
@@ -496,7 +496,7 @@ function QuickCode({ modelId, apiKey }: { modelId: string; apiKey?: string }) {
       key: "anthropic", label: "Anthropic 原生格式",
       content: (
         <div>
-          <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>如果您使用 Cursor 或 Claude 客户端，可在设置中将 Base URL 指向 <code style={{ color: "var(--color-ink)", fontFamily: "var(--font-mono)", fontSize: 11, backgroundColor: "var(--color-surface-card)", padding: "1px 4px", borderRadius: "var(--radius-sm)" }}>https://api.AliAPI.dev/anthropic</code>。</p>
+          <p style={{ fontSize: "var(--text-caption)", color: "var(--color-muted)", margin: "0 0 var(--spacing-md)" }}>如果您使用 Cursor 或 Claude 客户端，可在设置中将 Base URL 指向 <code style={{ color: "var(--color-ink)", fontFamily: "var(--font-mono)", fontSize: 11, backgroundColor: "var(--color-surface-card)", padding: "1px 4px", borderRadius: "var(--radius-sm)" }}>https://api.limAPI.dev/anthropic</code>。</p>
           <Tabs tabs={langTabs} activeKey={langTab} onChange={setLangTab} />
         </div>
       ),
@@ -528,7 +528,7 @@ function Playground({ modelName, apiKeyId, setApiKeyId, prompt, setPrompt, respo
   const estimatedTokens = Math.max(20, Math.round(prompt.length / 2.5));
 
   const startStream = () => {
-    if (!apiKeyId) { showToast("请先选择 API Key"); return; }
+    if (!apiKeyId) { showToast("请先选择 Key"); return; }
     if (!prompt.trim()) { showToast("请输入 Prompt"); return; }
     setStats(null);
     setResponse("");
@@ -572,7 +572,7 @@ function Playground({ modelName, apiKeyId, setApiKeyId, prompt, setPrompt, respo
     <div style={{ border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-md)", backgroundColor: "var(--color-canvas)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-sm)", padding: "var(--spacing-sm) var(--spacing-md)", borderBottom: "1px solid var(--color-hairline-soft)" }}>
         <select value={apiKeyId} onChange={(e) => setApiKeyId(e.target.value)} disabled={streaming} style={{ flex: 1, height: 32, paddingLeft: "var(--spacing-sm)", paddingRight: 28, fontSize: "var(--text-body-sm)", color: apiKeyId ? "var(--color-ink)" : "var(--color-muted)", backgroundColor: "var(--color-canvas)", border: "1px solid var(--color-hairline)", borderRadius: "var(--radius-sm)", cursor: streaming ? "not-allowed" : "pointer", appearance: "none", backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%236B7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 8px center" }}>
-          <option value="">选择 API Key</option>
+          <option value="">选择 Key</option>
           {MOCK_KEYS.map((k) => <option key={k.id} value={k.id}>{k.name} ({k.masked})</option>)}
         </select>
         <div ref={popoverRef} style={{ position: "relative" }}>
@@ -624,7 +624,7 @@ function Playground({ modelName, apiKeyId, setApiKeyId, prompt, setPrompt, respo
               <span style={{ display: "inline-block", width: 10, height: 10, backgroundColor: "var(--color-error)" }} />停止生成
             </button>
           ) : (
-            <button onClick={startStream} disabled={!canSend} title={!apiKeyId ? "请先选择 API Key" : ""} style={{ height: 32, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: canSend ? "var(--color-primary)" : "#9CA3AF", border: "none", borderRadius: "var(--radius-sm)", cursor: canSend ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <button onClick={startStream} disabled={!canSend} title={!apiKeyId ? "请先选择 Key" : ""} style={{ height: 32, padding: "0 var(--spacing-md)", fontSize: "var(--text-body-sm)", fontWeight: 600, color: "var(--color-on-primary)", backgroundColor: canSend ? "var(--color-primary)" : "#9CA3AF", border: "none", borderRadius: "var(--radius-sm)", cursor: canSend ? "pointer" : "not-allowed", display: "inline-flex", alignItems: "center", gap: 6 }}>
               发送测试请求
             </button>
           )}
